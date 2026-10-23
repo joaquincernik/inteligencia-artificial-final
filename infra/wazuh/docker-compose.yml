@@ -98,19 +98,6 @@ services:
       - wazuh.indexer:wazuh.indexer
       - wazuh.manager:wazuh.manager
 
-  postfix:
-    image: juanluisbaptiste/postfix:latest
-    hostname: postfix
-    container_name: postfix
-    restart: always
-    environment:
-      - SMTP_SERVER=smtp.gmail.com
-      - SMTP_PORT=587
-      - SMTP_USERNAME=joaquincernik@gmail.com
-      - SMTP_PASSWORD=S{SMTP_PASSWORD}
-      - SERVER_HOSTNAME=wazuh.manager
-    ports:
-      - "25:25"
 volumes:
   wazuh_api_configuration:
   wazuh_etc:
