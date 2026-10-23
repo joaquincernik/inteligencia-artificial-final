@@ -227,7 +227,7 @@ Las variables principales son:
 GOOGLE_API_KEY=tu_api_key_aqui
 MODEL_NAME=google_genai:gemini-2.5-flash-lite
 
-# Configuración Wazuh (opcional para el MVP)
+# Configuración Wazuh
 WAZUH_API_URL=https://localhost:55000
 WAZUH_API_USER=admin
 WAZUH_API_PASSWORD=tu_password_aqui
@@ -239,7 +239,7 @@ WAZUH_VERIFY_SSL=false
 
 ---
 
-## Integración opcional con Wazuh (Docker)
+## Integración con Wazuh (Docker)
 
 Capazeta cuenta con herramientas para consultar agentes, alertas y realizar mapeo a MITRE ATT&CK utilizando un stack de Wazuh. Para levantarlo localmente podés utilizar la configuración incluida en `infra/wazuh/`.
 
