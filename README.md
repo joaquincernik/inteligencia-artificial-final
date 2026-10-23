@@ -222,9 +222,9 @@ uv run python -m capazeta.rag.build --force
 
 ---
 
-## 👥 Autores
+## 👥 Autor
 
-- **[Nombre Apellido]** — [GitHub](https://github.com/usuario) · [LinkedIn](https://linkedin.com/in/usuario)
+- **Joaquin Cernik** — [GitHub](https://github.com/joaquincernik) · [LinkedIn](https://linkedin.com/in/joaquincernik)
 
 ---
 
