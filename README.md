@@ -310,6 +310,7 @@ uv run python -m capazeta.rag.build --force
 - [ ] **Exportación de reportes a PDF:** Crear una herramienta `export_report_pdf` (análoga a la existente `report.py` para Markdown) que permita generar reportes profesionales en PDF con hallazgos, técnicas MITRE, artefactos e indicadores.
 - [ ] **Persistencia de conversaciones:** Incorporación de persistencia de hilos con base de datos (PostgreSQL / SQLite Checkpointer).
 - [ ] **Ampliación de herramientas:** Desarrollo de herramientas activas para los agentes `web_apis`, `mobile` y `ot_ics`.
+- [ ] **Interfaz amigable** En lugar de seguir utilizando la terminal como interaccion migrarlo a la web o a una interfaz mas amigable para el usuario, por ejemplo con herramientas como Streamlit, Chainlit o Gradio.
 
 ---
 
