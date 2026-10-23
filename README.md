@@ -95,6 +95,17 @@ Capazeta implementa un grafo direccionado de estados (`StateGraph`) respaldado p
 
 ![Diagrama de Arquitectura](docs/img/grafico.png)
 
+### Definición PEAS del agente
+
+Para formalizar el comportamiento del sistema, se define Capazeta bajo el marco PEAS (Russell & Norvig):
+
+| Elemento | Definición | Aplicación en Capazeta |
+| :-- | :-- | :-- |
+| **P - *Performance Measure* (Medida de rendimiento)** | Criterios para evaluar si el agente actúa correctamente. | Enrutamiento correcto al subagente, mapeo preciso a técnicas/tácticas MITRE ATT&CK, respuestas fundamentadas en el contexto recuperado, minimización de alucinaciones y utilidad de los reportes generados. |
+| **E - *Environment* (Entorno)** | Espacio con el que interactúa el agente. | Consultas del usuario, stack de Wazuh (API/Indexer), objetivo de red para escaneo con Nmap, base de conocimiento MITRE ATT&CK, sistema de archivos local y herramientas disponibles. |
+| **A - *Actuators* (Actuadores)** | Acciones que puede ejecutar del agente. | Respuestas al usuario, llamadas a herramientas (`run_nmap_scan`, `wazuh_list_agents`, `wazuh_search_alerts`, `wazuh_mitre_coverage`, `search_mitre_attack`), razonamiento entre subagentes y generación/guardado de reportes en Markdown. |
+| **S - *Sensors* (Sensores)** | Percepciones que recibe del agente. | Mensajes del usuario, resultados de las herramientas ejecutadas, información recuperada del índice FAISS de MITRE ATT&CK, alertas/eventos de Wazuh, resultados de escaneo Nmap y estado del grafo (`AgentState`). |
+
 ### Sistema RAG (MITRE ATT&CK)
 
 Las consultas sobre inteligencias de amenazas y cobertura de eventos se resuelven mediante búsqueda semántica contra un índice vectorial FAISS (`data/mitre/faiss`). Las técnicas y tácticas se parsean y sincronizan localmente desde el bundle de STIX.
@@ -191,8 +202,7 @@ Se comparará el desempeño del sistema con un enfoque sin IA, tomando como refe
 
 ```bash
 # 1. Cloná el repositorio
-git clone https://github.com/TU-USUARIO/capazeta.git
-cd capazeta
+git clone https://https://github.com/joaquincernik/inteligencia-artificial-final
 
 # 2. Creá el entorno virtual e instalá las dependencias con uv
 uv venv --python 3.10
@@ -292,9 +302,14 @@ uv run python -m capazeta.rag.build --force
 
 ## 🗺️ Roadmap
 
-- [ ] Incorporación de persistencia de hilos con base de datos (PostgreSQL / SQLite Checkpointer).
-- [ ] Ampliación de herramientas de escaneo web para el agente `web_apis`.
-- [ ] Evaluación cuantitativa de precisión en el enrutamiento de subagentes.
+### Para próximas iteraciones (Entrega Final)
+- [ ] **Evaluación cuantitativa de Retrieval:** Implementación de métricas *Hit Rate@K*, *Mean Reciprocal Rank (MRR)* y *Recall@K* sobre un dataset de pruebas con logs/alertas de Wazuh mapeados a técnicas MITRE ATT&CK.
+- [ ] **Evaluación de generación LLM:** Medición de *Fidelidad (Faithfulness)* y *Relevancia de la Respuesta (Answer Relevance)* utilizando [Ragas](https://docs.ragas.io/) integrado con [LangSmith](https://www.langchain.com/langsmith).
+- [ ] **Baseline comparativo:** Comparación entre el sistema Capazeta, búsqueda manual por analista SOC y búsqueda tradicional por palabras clave (keyword/BM25) sobre el catálogo MITRE ATT&CK.
+- [ ] **Contrastación con otras verticales de ciberseguridad:** Integración y mapeo a marcos complementarios como **MITRE D3FEND** (contramedidas defensivas), **ATT&CK for Cloud**, **ATT&CK for Mobile** y **ATT&CK for ICS**, permitiendo contrastar hallazgos entre diferentes dominios y enriquecer el razonamiento del agente.
+- [ ] **Exportación de reportes a PDF:** Crear una herramienta `export_report_pdf` (análoga a la existente `report.py` para Markdown) que permita generar reportes profesionales en PDF con hallazgos, técnicas MITRE, artefactos e indicadores.
+- [ ] **Persistencia de conversaciones:** Incorporación de persistencia de hilos con base de datos (PostgreSQL / SQLite Checkpointer).
+- [ ] **Ampliación de herramientas:** Desarrollo de herramientas activas para los agentes `web_apis`, `mobile` y `ot_ics`.
 
 ---
 

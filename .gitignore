@@ -8,6 +8,7 @@ __pycache__/
 *$py.class
 *.so
 
+
 # Build & Packages
 build/
 develop-eggs/
@@ -49,3 +50,5 @@ reports/*.md
 .pytest_cache/
 .coverage
 htmlcov/
+
+**/wazuh_indexer_ssl_certs
