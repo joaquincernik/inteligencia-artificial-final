@@ -1,6 +1,6 @@
 <div align="center">
 
-# Capazeta
+# Capazeta agent
 
 ### Asistente ciberseguridad multi-agente modular basado en LangGraph y LangChain
 
