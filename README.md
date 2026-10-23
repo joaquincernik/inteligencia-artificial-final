@@ -54,10 +54,10 @@ El sistema organiza sus capacidades en 6 nodos de subagentes especializados, coo
 
 ### Contexto académico
 
-- **Asignatura:** [Nombre de la materia]
-- **Institución:** [Nombre de la institución]
-- **Cohorte / año:** [Año]
-- **Docente:** [Nombre del/la docente]
+- **Asignatura:** Inteligencia Artificial
+- **Institución:** Instituto Universitario Aeronautico
+- **Cohorte / año:** 2026
+- **Docente:** Alexis Gonzalez
 
 ### Construido con
 
