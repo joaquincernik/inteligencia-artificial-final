@@ -103,9 +103,39 @@ Las consultas sobre inteligencias de amenazas y cobertura de eventos se resuelve
 
 ## 📈 Resultados
 
-[pendiente de completar una vez evaluado formalmente el rendimiento del sistema]
+### Estado actual (MVP)
 
-Actualmente, el sistema ejecuta de forma funcional la clasificación de dominios, ejecuciones de herramientas Nmap/Wazuh y consultas semánticas RAG sobre la base de datos de MITRE ATT&CK.
+El sistema se encuentra en etapa de **MVP funcional**. Se ha validado cualitativamente la correcta ejecución de las siguientes funcionalidades:
+
+- **Enrutamiento multi-agente:** Clasificación correcta de las consultas hacia los 6 dominios de especialidad.
+- **Herramientas activas:** Escaneo de red con Nmap, consulta de agentes/eventos/alertas desde Wazuh API/Indexer y generación automatizada de reportes en Markdown.
+- **RAG MITRE ATT&CK:** Recuperación semántica de técnicas y tácticas desde el bundle STIX sobre un índice vectorial FAISS con embeddings de Gemini.
+- **Arquitectura modular:** Grafo LangGraph con bucles de tool-calling y persistencia en memoria (`InMemorySaver`).
+
+### Protocolo de evaluación para la entrega final
+
+Para la siguiente etapa, se plantea la siguiente metodología de evaluación cuantitativa del desempeño del sistema:
+
+#### 1. Calidad de Recuperación (*Retrieval*)
+Se medirá si el sistema recupera las reglas o técnicas MITRE ATT&CK correctas frente a un log o alerta de Wazuh.
+
+- **Hit Rate@K:** Porcentaje de consultas en las que al menos una técnica MITRE correcta se encuentra entre los top-K resultados recuperados.
+- **Mean Reciprocal Rank (MRR):** Posición promedio de la primera respuesta correcta en el ranking de recuperación.
+- **Recall@K:** Proporción de técnicas relevantes recuperadas respecto al total de técnicas esperadas para cada caso de prueba.
+
+#### 2. Calidad de Generación (*LLM Generation*)
+Se evaluará la respuesta final emitida por el agente para garantizar confiabilidad y evitar alucinaciones.
+
+- **Fidelidad (*Faithfulness*):** Mide si todas las afirmaciones, tácticas o técnicas mencionadas en la respuesta se encuentran soportadas por el contexto recuperado por el RAG. Se busca minimizar alucinaciones.
+- **Relevancia de la Respuesta (*Answer Relevance*):** Evalúa qué tan alineada se encuentra la respuesta con la consulta original y el objetivo del análisis solicitado.
+
+Para automatizar estas métricas, se utilizarán frameworks de evaluación como [**Ragas**](https://docs.ragas.io/) integrados con [**LangSmith**](https://www.langchain.com/langsmith) para el seguimiento y trazabilidad de las evaluaciones.
+
+#### 3. Baseline Comparativo
+Se comparará el desempeño del sistema con un enfoque sin IA, tomando como referencia:
+
+- **Búsqueda manual por analista SOC:** Tiempo promedio y precisión al mapear una alerta de Wazuh a sus técnicas correspondientes utilizando la documentación oficial de [MITRE ATT&CK](https://attack.mitre.org/).
+- **Búsqueda tradicional por palabras clave:** Búsqueda sintáctica directa sobre el catálogo de técnicas MITRE (sin búsqueda vectorial semántica), evaluando también tiempo de resolución y precisión en el mapeo.
 
 ---
 
@@ -155,6 +185,7 @@ Actualmente, el sistema ejecuta de forma funcional la clasificación de dominios
 - [uv](https://docs.astral.sh/uv/getting-started/installation/)
 - Git
 - Python >= 3.10
+- [Docker](https://www.docker.com/) y [Docker Compose](https://docs.docker.com/compose/) *(solo si vas a utilizar la integración con Wazuh)*
 
 ### Pasos
 
@@ -174,21 +205,66 @@ uv pip install -e .
 
 ### Configuración de Variables de Entorno
 
-Creá un archivo `.env` en la raíz del proyecto basándote en el siguiente formato:
+Copiá el archivo de ejemplo y completá con tus credenciales:
+
+```bash
+cp .env.example .env
+```
+
+Las variables principales son:
 
 ```env
 GOOGLE_API_KEY=tu_api_key_aqui
 MODEL_NAME=google_genai:gemini-2.5-flash-lite
 
-# Configuración Opcional Wazuh
+# Configuración Wazuh (opcional para el MVP)
 WAZUH_API_URL=https://localhost:55000
 WAZUH_API_USER=admin
-WAZUH_API_PASSWORD=admin_password
+WAZUH_API_PASSWORD=tu_password_aqui
 WAZUH_INDEXER_URL=https://localhost:9200
 WAZUH_INDEXER_USER=admin
-WAZUH_INDEXER_PASSWORD=indexer_password
+WAZUH_INDEXER_PASSWORD=tu_password_aqui
 WAZUH_VERIFY_SSL=false
+``` 
+
+---
+
+## Integración opcional con Wazuh (Docker)
+
+Capazeta cuenta con herramientas para consultar agentes, alertas y realizar mapeo a MITRE ATT&CK utilizando un stack de Wazuh. Para levantarlo localmente podés utilizar la configuración incluida en `infra/wazuh/`.
+
+### Requisitos
+- Docker y Docker Compose
+- Mínimo 4GB de RAM libres (recomendado)
+- Sistema Linux, macOS o Windows con WSL2
+
+### Pasos para levantar el stack
+
+```bash
+# 1. Ir al directorio de Wazuh (single-node)
+cd infra/wazuh
+
+# 2. Aumentar vm.max_map_count (obligatorio en Linux)
+sudo sysctl -w vm.max_map_count=262144
+
+# 3. Generar los certificados TLS (solo la primera vez)
+docker compose -f generate-indexer-certs.yml run --rm generator
+
+# 4. Levantar el stack en segundo plano
+docker compose up -d
 ```
+
+### Acceso
+
+| Servicio | URL / Puerto | Credenciales por defecto |
+| :-- | :-- | :-- |
+| Wazuh Dashboard | `https://localhost` | Configuradas en el stack (revisar `docker-compose.yml` / `config/`) |
+| Wazuh API | `https://localhost:55000` | Coinciden con las variables `WAZUH_API_*` |
+| Wazuh Indexer (OpenSearch) | `https://localhost:9200` | Coinciden con las variables `WAZUH_INDEXER_*` |
+
+> **Nota:** El stack utiliza certificados auto-firmados. Por ese motivo es importante mantener `WAZUH_VERIFY_SSL=false` en el `.env` de Capazeta para pruebas locales. 
+
+Para detener el entorno: `docker compose down`. Para detenerlo y eliminar volúmenes (borrando datos): `docker compose down -v`.
 
 ---
 
