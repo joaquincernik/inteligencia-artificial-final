@@ -34,7 +34,7 @@ def main():
 
     config = {
         "configurable": {"thread_id": THREAD_ID},
-        "tags": [f"model:{MODEL_NAME}"],
+        "tags": [f"model:{MODEL_NAME.split(':', 1)[-1]}"],
         "metadata": {"model": MODEL_NAME, "thread_id": THREAD_ID},
         "run_name": "capazeta",
     }

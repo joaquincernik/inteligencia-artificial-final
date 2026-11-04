@@ -67,6 +67,7 @@ El sistema organiza sus capacidades en 6 nodos de subagentes especializados, coo
 - [Wazuh API & Indexer](https://wazuh.com/) — Integración con SIEM y gestión de alertas
 - [python-nmap](https://xael.org/pages/python-nmap-en.html) — Automatización de escaneos de red
 - [Rich](https://rich.readthedocs.io/) — Interfaz de terminal (paneles, spinner y Markdown)
+- [LangSmith](https://smith.langchain.com/) — Trazabilidad y monitoreo de las ejecuciones
 - [uv](https://docs.astral.sh/uv/) — Gestión rápida de entornos y dependencias
 
 ---
@@ -227,7 +228,17 @@ Las variables principales son:
 
 ```env
 GOOGLE_API_KEY=tu_api_key_aqui
-MODEL_NAME=google_genai:gemini-2.5-flash-lite
+
+# Catálogo de modelos disponibles (elegí el activo en MODEL_NAME):
+MODEL_1=google_genai:gemini-3.1-flash-lite
+MODEL_2=groq:openai/gpt-oss-120b
+#MODEL_3=openai:gpt-4o-mini
+MODEL_4=groq:openai/gpt-oss-20b
+MODEL_5=groq:qwen/qwen3.8-27b
+MODEL_6=groq:openai/gpt-oss-safeguard-20b
+
+# Modelo activo (referenciá una variable definida arriba):
+MODEL_NAME=${MODEL_2}
 
 # Configuración Wazuh
 WAZUH_API_URL=https://localhost:55000
@@ -237,7 +248,33 @@ WAZUH_INDEXER_URL=https://localhost:9200
 WAZUH_INDEXER_USER=admin
 WAZUH_INDEXER_PASSWORD=tu_password_aqui
 WAZUH_VERIFY_SSL=false
+
+# LangSmith (trazabilidad)
+LANGSMITH_TRACING=true
+LANGSMITH_ENDPOINT=https://api.smith.langchain.com
+LANGSMITH_API_KEY=tu_langsmith_api_key_aqui
+LANGSMITH_PROJECT=IA
 ``` 
+
+### Trazabilidad con LangSmith
+
+Capazeta puede enviar cada ejecución del grafo a [LangSmith](https://smith.langchain.com/) para inspeccionar el recorrido del router, las llamadas a tools (Nmap, Wazuh, RAG MITRE) y el consumo de tokens.
+
+1. Creá una cuenta en [smith.langchain.com](https://smith.langchain.com/) y generá una API key (`Settings → API Keys`).
+2. Completá las variables en tu `.env`:
+
+```env
+LANGSMITH_TRACING=true
+LANGSMITH_ENDPOINT=https://api.smith.langchain.com
+LANGSMITH_API_KEY=tu_langsmith_api_key_aqui
+LANGSMITH_PROJECT=IA
+```
+
+3. Ejecutá `uv run capazeta` como siempre. Las trazas aparecen en el proyecto **IA**.
+
+En el dashboard, cada consulta se registra como un run llamado `capazeta`, etiquetado con `model:<id>` (por ejemplo `model:gpt-oss-120b`) y con la metadata `model` y `thread_id`, lo que permite filtrar las ejecuciones por modelo o por sesión.
+
+Para desactivar el tracing alcanza con `LANGSMITH_TRACING=false`; no hay que tocar código.
 
 ---
 
