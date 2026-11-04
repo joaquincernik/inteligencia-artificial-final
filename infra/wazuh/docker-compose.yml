@@ -5,7 +5,6 @@ services:
   wazuh.manager:
     image: wazuh/wazuh-manager:4.11.2
     hostname: wazuh.manager
-    restart: always
     ulimits:
       memlock:
         soft: -1
@@ -48,7 +47,6 @@ services:
   wazuh.indexer:
     image: wazuh/wazuh-indexer:4.11.2
     hostname: wazuh.indexer
-    restart: always
     ports:
       - "9200:9200"
     environment:
@@ -73,7 +71,6 @@ services:
   wazuh.dashboard:
     image: wazuh/wazuh-dashboard:4.11.2
     hostname: wazuh.dashboard
-    restart: always
     ports:
       - 443:5601
     environment:

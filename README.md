@@ -66,6 +66,7 @@ El sistema organiza sus capacidades en 6 nodos de subagentes especializados, coo
 - [FAISS](https://github.com/facebookresearch/faiss) — Almacenamiento vectorial para RAG
 - [Wazuh API & Indexer](https://wazuh.com/) — Integración con SIEM y gestión de alertas
 - [python-nmap](https://xael.org/pages/python-nmap-en.html) — Automatización de escaneos de red
+- [Rich](https://rich.readthedocs.io/) — Interfaz de terminal (paneles, spinner y Markdown)
 - [uv](https://docs.astral.sh/uv/) — Gestión rápida de entornos y dependencias
 
 ---
@@ -163,6 +164,7 @@ Se comparará el desempeño del sistema con un enfoque sin IA, tomando como refe
 │       ├── embeddings.py       # Configuración del modelo de Embeddings
 │       ├── llm.py              # Inicialización y abstracción de Chat Models
 │       ├── main.py             # Bucle de interacción interactivo (CLI)
+│       ├── ui.py               # Capa de presentación de la CLI (Rich)
 │       ├── graph/              # Grafo de estados, nodos y constructor de LangGraph
 │       │   ├── builder.py
 │       │   ├── nodes.py
@@ -297,6 +299,28 @@ Para actualizar o reconstruir el índice RAG de MITRE ATT&CK:
 ```bash
 uv run python -m capazeta.rag.build --force
 ```
+
+### Interfaz de terminal
+
+La CLI está construida con [Rich](https://rich.readthedocs.io/): al iniciar muestra un banner con el modelo y el `thread_id` en uso, un spinner mientras el grafo procesa la consulta, la respuesta del subagente renderizada como Markdown dentro de un panel, y una línea final con los tokens de entrada, salida, total de la interacción y acumulado de la sesión.
+
+```
+╭──────────────────────────────── 🛡️  Capazeta ────────────────────────────────╮
+│  modelo  google_genai:gemini-2.5-flash-lite                                  │
+│  thread  capazeta_thread                                                     │
+│  salir   salir · Ctrl+C · Ctrl+D                                             │
+╰────────────────── asistente multi-agente de ciberseguridad ──────────────────╯
+
+vos ❯ ¿qué técnicas MITRE usa un login fallido repetido?
+
+╭────────────────────────── Threat Intelligence ───────────────────────────────╮
+│  La técnica asociada es **T1110 - Brute Force** ...                          │
+╰──────────────────────────────────────────────────────────────────────────────╯
+──────────────────────────────────────────────────────────────────────────
+entrada 1.200  salida 350  total 1.550  sesión 4.200
+```
+
+Para salir: `salir`, `exit`, `quit` o `Ctrl+C` / `Ctrl+D`.
 
 ---
 

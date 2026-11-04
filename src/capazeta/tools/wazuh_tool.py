@@ -22,6 +22,7 @@ from capazeta.tools.report import (
     save_general_markdown_report,
     wazuh_alerts_to_markdown,
 )
+from capazeta.ui import progress
 
 _token_cache = {"token": None, "expires_at": 0.0}
 
@@ -93,7 +94,7 @@ def wazuh_list_agents(status: str = "active", limit: int = 50) -> str:
             Dejar vacío ("") para listar todos.
         limit: Cantidad máxima de agentes a devolver.
     """
-    print("consultando wazuh...", flush=True)
+    progress("Consultando Wazuh...")
     params: dict = {"limit": limit, "sort": "+name"}
     if status:
         params["status"] = status
@@ -124,7 +125,7 @@ def wazuh_list_agents(status: str = "active", limit: int = 50) -> str:
 @tool
 def wazuh_agents_summary() -> str:
     """Devuelve el resumen de conexión de agentes de Wazuh (active, disconnected, pending, etc.)."""
-    print("consultando wazuh...", flush=True)
+    progress("Consultando Wazuh...")
     try:
         payload = _api_get("/agents/summary/status")
     except Exception as exc:
@@ -144,7 +145,7 @@ def wazuh_search_alerts(
         hours: Ventana temporal hacia atrás en horas.
         save_md: Si es True, guarda un reporte Markdown en reports/.
     """
-    print("consultando wazuh...", flush=True)
+    progress("Consultando Wazuh...")
     body = {
         "size": limit,
         "sort": [{"@timestamp": {"order": "desc"}}],

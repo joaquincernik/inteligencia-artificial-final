@@ -6,6 +6,7 @@ from typing import Optional
 from langchain_core.tools import tool
 
 from capazeta.tools.report import save_markdown_report
+from capazeta.ui import progress
 
 try:
     import nmap
@@ -47,7 +48,7 @@ def run_nmap_scan(
     if error:
         return json.dumps({"error": error}, ensure_ascii=False)
 
-    print("realizando nmap...", flush=True)
+    progress("Ejecutando Nmap...")
 
     scanner = nmap.PortScanner()
     try:

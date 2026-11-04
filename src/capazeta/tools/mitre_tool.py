@@ -11,6 +11,7 @@ from capazeta.tools.report import (
     save_general_markdown_report,
 )
 from capazeta.tools.wazuh_tool import _indexer_search
+from capazeta.ui import progress
 
 
 @tool
@@ -22,7 +23,7 @@ def search_mitre_attack(query: str, k: int = 5, save_md: bool = False) -> str:
         k: Cantidad de técnicas a recuperar.
         save_md: Si es True, guarda un reporte Markdown en reports/.
     """
-    print("consultando mitre...", flush=True)
+    progress("Buscando en MITRE ATT&CK...")
     try:
         results = _mitre_search(query, k=k)
     except Exception as exc:
@@ -86,7 +87,7 @@ def wazuh_mitre_coverage(
         top: Cantidad máxima de técnicas a devolver.
         save_md: Si es True, guarda un reporte Markdown en reports/.
     """
-    print("consultando mitre...", flush=True)
+    progress("Consultando cobertura MITRE...")
     tactic_counter: Counter = Counter()
     tech_counter: Counter = Counter()
     try:
