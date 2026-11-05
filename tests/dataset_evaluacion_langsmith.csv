@@ -1,0 +1,32 @@
+rule.description,mitre_id
+Audit: Command: /usr/bin/ps.,T1057
+Audit: Watch - Read access: /etc/shadow.,T1003.008
+Audit: Watch - Read access: shadow.,T1003.008
+Integrity checksum changed.,T1565.001
+Audit: Watch - Read access.,T1003.008
+PAM: Login session opened.,T1078
+PAM: Login session closed.,T1078
+Successful sudo to ROOT executed.,T1548.003
+Auditd: Configuration changed.,T1562.012
+File deleted.,T1070.004
+File added to the system.,T1105
+Audit: Deleted: /etc/.,T1070.004
+Audit: Deleted: /etc/cron.d/wazuh_test.,T1070.004
+Audit: Deleted: /etc/systemd/system/wazuh_test.service.,T1070.004
+Audit: Deleted: /tmp/.,T1070.004
+New group added to the system.,T1136.001
+New user added to the system.,T1136.001
+Group (or user) deleted from the system.,T1531
+Wazuh agent stopped.,T1562.001
+Audit: Watch - Write access: /etc/passwd.,T1136.001
+Audit: Watch - Write access: /root/.bashrc.,T1546.004
+Possible kernel level rootkit,T1014
+sshd: Attempt to login using a non-existent user,T1110.001
+Audit: Created: /etc/cron.d/wazuh_test.,T1053.003
+Audit: Created: /etc/systemd/system/wazuh_test.service.,T1543.002
+Processes running for all users were queried with ps command.,T1057
+ModSecurity: Access attempt blocked.,T1190
+Common web attack.,T1190
+User missed the password to change UID (user id).,T1110.001
+First time user executed sudo.,T1548.003
+sshd: authentication failed.,T1110.001

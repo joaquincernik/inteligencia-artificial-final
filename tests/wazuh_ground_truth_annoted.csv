@@ -1,0 +1,32 @@
+rule.id,rule.description,Count,mitre_id,mitre_technique,mitre_tactic,notes
+80792,Audit: Command: /usr/bin/ps.,"2,002",T1057,Process Discovery,Discovery,
+80784,Audit: Watch - Read access: /etc/shadow.,89,T1003.008,OS Credential Dumping: /etc/passwd and /etc/shadow,Credential Access,
+80784,Audit: Watch - Read access: shadow.,1,T1003.008,OS Credential Dumping: /etc/passwd and /etc/shadow,Credential Access,
+550,Integrity checksum changed.,29,T1565.001,Data Manipulation: Stored Data Manipulation,Impact,
+80783,Audit: Watch - Read access.,25,T1003.008,OS Credential Dumping: /etc/passwd and /etc/shadow,Credential Access,Inferido: watch de lectura (audit-wazuh-r) sobre /etc/shadow
+5501,PAM: Login session opened.,20,T1078,Valid Accounts,Defense Evasion; Persistence; Privilege Escalation; Initial Access,
+5502,PAM: Login session closed.,20,T1078,Valid Accounts,Defense Evasion; Persistence; Privilege Escalation; Initial Access,
+5402,Successful sudo to ROOT executed.,18,T1548.003,Abuse Elevation Control Mechanism: Sudo and Sudo Caching,Privilege Escalation; Defense Evasion,
+80705,Auditd: Configuration changed.,15,T1562.012,Impair Defenses: Disable or Modify Linux Audit System,Defense Evasion,
+553,File deleted.,11,T1070.004,Indicator Removal: File Deletion,Defense Evasion,
+554,File added to the system.,11,T1105,Ingress Tool Transfer,Command and Control,Mapeo según Wazuh; tambien aplica T1565.001
+80791,Audit: Deleted: /etc/.,2,T1070.004,Indicator Removal: File Deletion,Defense Evasion,
+80791,Audit: Deleted: /etc/cron.d/wazuh_test.,1,T1070.004,Indicator Removal: File Deletion,Defense Evasion,
+80791,Audit: Deleted: /etc/systemd/system/wazuh_test.service.,1,T1070.004,Indicator Removal: File Deletion,Defense Evasion,
+80791,Audit: Deleted: /tmp/.,1,T1070.004,Indicator Removal: File Deletion,Defense Evasion,
+5901,New group added to the system.,4,T1136.001,Create Account: Local Account,Persistence,
+5902,New user added to the system.,4,T1136.001,Create Account: Local Account,Persistence,
+5903,Group (or user) deleted from the system.,4,T1531,Account Access Removal,Impact,
+506,Wazuh agent stopped.,2,T1562.001,Impair Defenses: Disable or Modify Tools,Defense Evasion,
+80781,Audit: Watch - Write access: /etc/passwd.,3,T1136.001,Create Account: Local Account,Persistence,Tambien podria ser T1098
+80781,Audit: Watch - Write access: /root/.bashrc.,1,T1546.004,Event Triggered Execution: Unix Shell Configuration Modification,Privilege Escalation; Persistence,
+521,Possible kernel level rootkit,2,T1014,Rootkit,Defense Evasion,Probable falso positivo en este entorno
+5710,sshd: Attempt to login using a non-existent user,2,T1110.001,Brute Force: Password Guessing,Credential Access,
+80790,Audit: Created: /etc/cron.d/wazuh_test.,1,T1053.003,Scheduled Task/Job: Cron,Execution; Persistence; Privilege Escalation,
+80790,Audit: Created: /etc/systemd/system/wazuh_test.service.,1,T1543.002,Create or Modify System Process: Systemd Service,Persistence; Privilege Escalation,
+92604,Processes running for all users were queried with ps command.,2,T1057,Process Discovery,Discovery,
+30118,ModSecurity: Access attempt blocked.,1,T1190,Exploit Public-Facing Application,Initial Access,
+31104,Common web attack.,1,T1190,Exploit Public-Facing Application,Initial Access,
+5301,User missed the password to change UID (user id).,1,T1110.001,Brute Force: Password Guessing,Credential Access,Fallo de su
+5403,First time user executed sudo.,1,T1548.003,Abuse Elevation Control Mechanism: Sudo and Sudo Caching,Privilege Escalation; Defense Evasion,
+5760,sshd: authentication failed.,1,T1110.001,Brute Force: Password Guessing,Credential Access,
