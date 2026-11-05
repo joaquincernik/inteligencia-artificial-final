@@ -1,0 +1,4 @@
+inputs.rule.description,outputs.tecnicas_recuperadas,error,reference.mitre_id,feedback.Hit@5,execution_time,example_id,id
+sshd: authentication failed.,"['T1021.004', 'T1187', 'T1098.004', 'T1556.001', 'T1563.001']",,T1110.001,0,0.510435,9bc77493-58e1-47ed-96ae-65d550a77620,01a1ac11-da12-74f1-a809-488bb9f94b51
+First time user executed sudo.,"['T1548.003', 'T1548.001', 'T1204', 'T1548.004', 'T1053.006']",,T1548.003,1,1.038947,5df11ed8-df46-479e-97c7-b5ff8c4c547d,01a1ac11-dc13-718c-988f-695c8353f91c
+User missed the password to change UID (user id).,"['T1556', 'T1033', 'T1564.002', 'T1685.003', 'T1201']",,T1110.001,0,0.232992,5ea07c5a-f0d9-4787-8533-216832bf5922,01a1ac11-e023-7004-8684-c74cada83665

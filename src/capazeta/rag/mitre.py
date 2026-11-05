@@ -6,13 +6,14 @@ búsqueda semántica + lookup por ID de técnica para enriquecer hallazgos.
 Build:  uv run python -m capazeta.rag.build [--force]
 """
 import json
+import os
 import re
 import time
 from pathlib import Path
 
 import httpx
 
-from capazeta.config import MITRE_DATA_DIR, MITRE_STIX_URL
+from capazeta.config import EMBEDDING_MODEL, MITRE_DATA_DIR, MITRE_STIX_URL
 from capazeta.embeddings import get_embeddings
 
 DATA_DIR = Path(MITRE_DATA_DIR)
@@ -22,7 +23,10 @@ TECHNIQUES_FILE = DATA_DIR / "techniques.json"
 
 _DESCRIPTION_LIMIT = 1200
 _EMBED_BATCH_SIZE = 80
-_EMBED_BATCH_SLEEP = 61.0
+_EMBED_BATCH_SLEEP = float(
+    os.getenv("MITRE_EMBED_BATCH_SLEEP")
+    or ("0" if EMBEDDING_MODEL.startswith("@cf/") else "61")
+)
 
 _store = None
 _techniques = None
@@ -124,17 +128,18 @@ def _embed_batch(embeddings, texts: list[str], attempts: int = 8) -> list[list[f
     raise RuntimeError("No se pudo generar embeddings tras varios intentos (rate limit).")
 
 
-def build_index(force: bool = False) -> dict:
+def build_index(force: bool = False, download: bool = True) -> dict:
     """Descarga MITRE, arma el índice FAISS y persiste metadatos. Devuelve un resumen.
 
     Si el índice FAISS ya existe y no se pasa `force`, solo refresca `techniques.json`
     (útil para incorporar técnicas revocadas sin volver a generar embeddings).
+    Con `download=False` reutiliza el STIX local aunque se pase `force`.
     """
     from langchain_community.vectorstores import FAISS
     from langchain_core.documents import Document
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    stix_path = _download_stix(force=force)
+    stix_path = _download_stix(force=force and download)
     bundle = json.loads(stix_path.read_text(encoding="utf-8"))
     techniques = _parse_techniques(bundle)
     by_id = _dedupe_by_id(techniques)

@@ -80,7 +80,7 @@ Capazeta utiliza la base de conocimiento oficial **MITRE ATT&CK Enterprise** par
 |---|---|
 | Fuente | [MITRE ATT&CK Enterprise STIX Bundle](https://github.com/mitre-attack/attack-stix-data) |
 | Formato | JSON / STIX 2.1 |
-| Vector Index | FAISS (Índice vectorial generado con embeddings de Gemini) |
+| Vector Index | FAISS (Índice vectorial generado con embeddings de Gemini o Cloudflare Workers AI) |
 | Variables / Campos | IDs de técnicas, tácticas, descripciones, mitigaciones y referencias de TTPs |
 | Licencia del dataset | Apache 2.0 (MITRE ATT&CK) |
 
@@ -112,6 +112,8 @@ Para formalizar el comportamiento del sistema, se define Capazeta bajo el marco 
 
 Las consultas sobre inteligencias de amenazas y cobertura de eventos se resuelven mediante búsqueda semántica contra un índice vectorial FAISS (`data/mitre/faiss`). Las técnicas y tácticas se parsean y sincronizan localmente desde el bundle de STIX.
 
+Por defecto se usan embeddings de Gemini (`models/gemini-embedding-001`). También se puede usar Cloudflare Workers AI: configurá `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` y un `EMBEDDING_MODEL` con prefijo `@cf/` (por ejemplo `@cf/qwen/qwen3-embedding-0.6b`), y reconstruí el índice con `uv run python -m capazeta.rag.build`. El índice debe regenerarse porque cambia la dimensión de los vectores.
+
 ---
 
 ## 📈 Resultados
@@ -122,7 +124,7 @@ El sistema se encuentra en etapa de **MVP funcional**. Se ha validado cualitativ
 
 - **Enrutamiento multi-agente:** Clasificación correcta de las consultas hacia los 6 dominios de especialidad.
 - **Herramientas activas:** Escaneo de red con Nmap, consulta de agentes/eventos/alertas desde Wazuh API/Indexer y generación automatizada de reportes en Markdown.
-- **RAG MITRE ATT&CK:** Recuperación semántica de técnicas y tácticas desde el bundle STIX sobre un índice vectorial FAISS con embeddings de Gemini.
+- **RAG MITRE ATT&CK:** Recuperación semántica de técnicas y tácticas desde el bundle STIX sobre un índice vectorial FAISS, con embeddings de Gemini (por defecto) o Cloudflare Workers AI.
 - **Arquitectura modular:** Grafo LangGraph con bucles de tool-calling y persistencia en memoria (`InMemorySaver`).
 
 ### Protocolo de evaluación para la entrega final
