@@ -26,7 +26,7 @@ DOMAIN_NODES = [
     "mobile",
     "soc_logs",
     "threat_intel",
-    "ot_ics",
+    #"ot_ics",
 ]
 
 TOOL_DOMAINS = {
@@ -49,7 +49,7 @@ def build_graph():
     graph_builder.add_node("mobile", mobile_node)
     graph_builder.add_node("soc_logs", soc_logs_node)
     graph_builder.add_node("threat_intel", threat_intel_node)
-    graph_builder.add_node("ot_ics", ot_ics_node)
+    #graph_builder.add_node("ot_ics", ot_ics_node)
 
     graph_builder.add_node("infra_tools", ToolNode([run_nmap_scan]))
     graph_builder.add_node(
