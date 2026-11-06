@@ -6,7 +6,7 @@
 
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/status-en%20desarrollo-orange.svg)]()
+[![Status](https://img.shields.io/badge/status-MVP%20funcional-brightgreen.svg)]()
 
 </div>
 
@@ -23,9 +23,10 @@
 - [Resultados](#-resultados)
 - [Estructura del proyecto](#-estructura-del-proyecto)
 - [Instalación](#-instalación)
+- [Integración con Wazuh (Docker)](#integración-con-wazuh-docker)
 - [Uso](#-uso)
 - [Roadmap](#-roadmap)
-- [Autores](#-autores)
+- [Autor](#-autor)
 - [Licencia](#-licencia)
 - [Agradecimientos y referencias](#-agradecimientos-y-referencias)
 
@@ -41,7 +42,7 @@ Capazeta se ejecuta de forma interactiva a través de una interfaz de línea de 
 
 ## 📖 Sobre el proyecto
 
-**Capazeta** es un asistente cibernético multi-agente modular desarrollado con **LangGraph** y **LangChain**. Su propósito es ayudar a equipos de seguridad, administradores de red y analistas de SOC a realizar tareas de diagnóstico, análisis de vulnerabilidades, investigación de amenazas e interpretación de logs en tiempo real.
+**Capazeta** es un asistente de ciberseguridad multi-agente modular desarrollado con **LangGraph** y **LangChain**. Su propósito es ayudar a equipos de seguridad, administradores de red y analistas de SOC a realizar tareas de diagnóstico, análisis de vulnerabilidades, investigación de amenazas e interpretación de logs en tiempo real.
 
 El sistema organiza sus capacidades en 3 nodos de subagentes especializados, coordinados por un enrutador principal:
 
@@ -54,7 +55,7 @@ Las verticales de **Aplicaciones Web y APIs**, **Mobile** y **OT/ICS** quedan fu
 ### Contexto académico
 
 - **Asignatura:** Inteligencia Artificial
-- **Institución:** Instituto Universitario Aeronautico
+- **Institución:** Instituto Universitario Aeronáutico
 - **Cohorte / año:** 2026
 - **Docente:** Alexis Gonzalez
 
@@ -66,7 +67,9 @@ Las verticales de **Aplicaciones Web y APIs**, **Mobile** y **OT/ICS** quedan fu
 - [Wazuh API & Indexer](https://wazuh.com/) — Integración con SIEM y gestión de alertas
 - [python-nmap](https://xael.org/pages/python-nmap-en.html) — Automatización de escaneos de red
 - [Rich](https://rich.readthedocs.io/) — Interfaz de terminal (paneles, spinner y Markdown)
-- [LangSmith](https://smith.langchain.com/) — Trazabilidad y monitoreo de las ejecuciones
+- [LangSmith](https://smith.langchain.com/) — Trazabilidad, monitoreo y evaluación de las ejecuciones
+- [ReportLab](https://www.reportlab.com/) — Renderizado de reportes PDF
+- [Docker](https://www.docker.com/) — Stack local de Wazuh (manager, indexer y dashboard)
 - [uv](https://docs.astral.sh/uv/) — Gestión rápida de entornos y dependencias
 
 ---
@@ -89,7 +92,7 @@ Capazeta utiliza la base de conocimiento oficial **MITRE ATT&CK Enterprise** par
 
 ### Arquitectura Multi-Agente
 
-Capazeta implementa un grafo direccionado de estados (`StateGraph`) respaldado por persitencia en memoria (`InMemorySaver`):
+Capazeta implementa un grafo direccionado de estados (`StateGraph`) respaldado por persistencia en memoria (`InMemorySaver`):
 
 - **Router Central:** Clasifica el requerimiento del usuario y delega la tarea al subagente de dominio correspondiente.
 - **Herramientas (ToolNodes):** Subagentes con capacidad de ejecución de herramientas iterativas (`infraestructura_redes`, `soc_logs`, `threat_intel`), utilizando bucles de Tool Calling para invocar escaneos Nmap, consultas al Indexer/API de Wazuh y búsquedas vectoriales sobre MITRE ATT&CK.
@@ -117,39 +120,48 @@ Por defecto se usan embeddings de Gemini (`models/gemini-embedding-001`). Tambi�
 
 ## 📈 Resultados
 
-### Estado actual (MVP)
+### Estado actual (MVP funcional)
 
-El sistema se encuentra en etapa de **MVP funcional**. Se ha validado cualitativamente la correcta ejecución de las siguientes funcionalidades:
+El sistema se encuentra en etapa de **MVP funcional**. Se validó cualitativamente la correcta ejecución de las siguientes funcionalidades:
 
 - **Enrutamiento multi-agente:** Clasificación correcta de las consultas hacia los 3 dominios de especialidad activos.
 - **Herramientas activas:** Escaneo de red con Nmap (destino, puertos y flags validados contra una lista blanca), consulta de agentes/eventos/alertas desde Wazuh API/Indexer y generación automatizada de reportes en Markdown y PDF.
 - **RAG MITRE ATT&CK:** Recuperación semántica de técnicas y tácticas desde el bundle STIX sobre un índice vectorial FAISS, con embeddings de Gemini (por defecto) o Cloudflare Workers AI.
 - **Arquitectura modular:** Grafo LangGraph con bucles de tool-calling y persistencia en memoria (`InMemorySaver`).
 
-### Protocolo de evaluación para la entrega final
+### Evaluación cuantitativa del retrieval
 
-Para la siguiente etapa, se plantea la siguiente metodología de evaluación cuantitativa del desempeño del sistema:
+Se evaluó el módulo de recuperación del RAG sobre **31 alertas reales de Wazuh** anotadas con su técnica MITRE ATT&CK correcta. El dataset de evaluación está en [`tests/dataset_evaluacion_langsmith.csv`](tests/dataset_evaluacion_langsmith.csv) y la anotación completa (con regla, técnica y táctica) en [`tests/wazuh_ground_truth_annoted.csv`](tests/wazuh_ground_truth_annoted.csv).
 
-#### 1. Calidad de Recuperación (*Retrieval*)
-Se medirá si el sistema recupera las reglas o técnicas MITRE ATT&CK correctas frente a un log o alerta de Wazuh.
+Las métricas se registraron con **LangSmith**:
 
-- **Hit Rate@K:** Porcentaje de consultas en las que al menos una técnica MITRE correcta se encuentra entre los top-K resultados recuperados.
-- **Mean Reciprocal Rank (MRR):** Posición promedio de la primera respuesta correcta en el ranking de recuperación.
-- **Recall@K:** Proporción de técnicas relevantes recuperadas respecto al total de técnicas esperadas para cada caso de prueba.
+- **Hit@5:** proporción de consultas en las que al menos una técnica correcta aparece entre los 5 primeros resultados.
+- **MRR (*Mean Reciprocal Rank*):** promedio del inverso de la posición de la primera técnica correcta.
+- **Latencia promedio:** tiempo medio de respuesta del retrieval por consulta.
 
-#### 2. Calidad de Generación (*LLM Generation*)
-Se evaluará la respuesta final emitida por el agente para garantizar confiabilidad y evitar alucinaciones.
+| Modelo / Sistema | Tipo / Proveedor | Muestras | Hit@5 | MRR | Latencia prom. |
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| **Gemini embedding-001** | Semántico / Google Cloud | 31 | **67.74 %** | **0.4866** | 636.4 ms |
+| **Qwen3 embedding-0.6b** | Semántico / Cloudflare Workers AI | 31 | **54.84 %** | **0.3989** | 2012.0 ms |
+| **BGE-Large-EN-v1.5** | Semántico / Cloudflare Workers AI | 31 | **51.61 %** | **0.3505** | 651.7 ms |
+| **Plamo embedding-1b** | Semántico / Cloudflare Workers AI | 14* | **50.00 %** | **0.3952** | 748.9 ms |
+| **Baseline (TF-IDF)** | Léxico tradicional / algorítmico | 31 | **32.26 %** | **0.2769** | **6.8 ms** |
 
-- **Fidelidad (*Faithfulness*):** Mide si todas las afirmaciones, tácticas o técnicas mencionadas en la respuesta se encuentran soportadas por el contexto recuperado por el RAG. Se busca minimizar alucinaciones.
-- **Relevancia de la Respuesta (*Answer Relevance*):** Evalúa qué tan alineada se encuentra la respuesta con la consulta original y el objetivo del análisis solicitado.
+\*Plamo procesó 14 de las 31 alertas antes de que se interrumpiera el experimento; es un modelo orientado principalmente al japonés.
 
-Para automatizar estas métricas, se utilizarán frameworks de evaluación como [**Ragas**](https://docs.ragas.io/) integrados con [**LangSmith**](https://www.langchain.com/langsmith) para el seguimiento y trazabilidad de las evaluaciones.
+**Lectura de los resultados:** el mejor modelo semántico (Gemini embedding-001) mejora el baseline léxico TF-IDF en **+35.48 puntos porcentuales de Hit@5** y casi duplica el MRR (0.4866 vs. 0.2769). El costo es la latencia: 636.4 ms frente a 6.8 ms del baseline.
 
-#### 3. Baseline Comparativo
-Se comparará el desempeño del sistema con un enfoque sin IA, tomando como referencia:
+Los resultados completos, con el análisis por modelo, están en [`notebooks/02_evaluacion_rag.ipynb`](notebooks/02_evaluacion_rag.ipynb) y [`notebooks/03_evaluacion_modelos_embedding.ipynb`](notebooks/03_evaluacion_modelos_embedding.ipynb); las salidas crudas de LangSmith, en [`reports/`](reports/).
 
-- **Búsqueda manual por analista SOC:** Tiempo promedio y precisión al mapear una alerta de Wazuh a sus técnicas correspondientes utilizando la documentación oficial de [MITRE ATT&CK](https://attack.mitre.org/).
-- **Búsqueda tradicional por palabras clave:** Búsqueda sintáctica directa sobre el catálogo de técnicas MITRE (sin búsqueda vectorial semántica), evaluando también tiempo de resolución y precisión en el mapeo.
+### Evaluación pendiente (generación LLM)
+
+La calidad de la **respuesta final** todavía no está medida. Queda pendiente evaluar:
+
+- **Fidelidad (*Faithfulness*):** que todas las afirmaciones y técnicas mencionadas estén respaldadas por el contexto recuperado.
+- **Relevancia de la respuesta (*Answer Relevance*):** que la respuesta esté alineada con la consulta original.
+
+Para automatizar estas métricas se planea usar [**Ragas**](https://docs.ragas.io/) integrado con [LangSmith](https://www.langchain.com/langsmith), tal como se detalla en el [roadmap](#-roadmap).
+
 
 ---
 
@@ -158,8 +170,10 @@ Se comparará el desempeño del sistema con un enfoque sin IA, tomando como refe
 ```text
 .
 ├── README.md
+├── LICENSE
 ├── pyproject.toml
 ├── .gitignore
+├── .env.example
 ├── src/
 │   └── capazeta/
 │       ├── config.py           # Configuración de variables de entorno y parámetros
@@ -182,13 +196,19 @@ Se comparará el desempeño del sistema con un enfoque sin IA, tomando como refe
 │           └── wazuh_tool.py
 ├── data/
 │   └── mitre/                  # Datos y catálogo de técnicas de MITRE ATT&CK
-├── reports/                    # Salida de reportes generados (.md y .pdf)
-├── notebooks/                  # Notebooks de exploración y pruebas
-├── tests/                      # Suite de pruebas unitarias/integración
+├── reports/                    # CSVs de evaluación y reportes generados (.md/.pdf)
+├── notebooks/                  # Notebooks de exploración, evaluación y demos
+├── tests/                      # Dataset de evaluación y script de eventos para Wazuh
+├── infra/
+│   └── wazuh/                  # Stack Docker single-node de Wazuh
 └── docs/
     ├── index.html              # Página estática para GitHub Pages
-    └── img/
-        └── grafico.png         # Diagrama del grafo de agentes
+    ├── assets/
+    │   └── style.css           # Estilos de la página
+    └── img/                    # Diagrama de arquitectura y capturas
+        ├── grafico.png
+        ├── cli.png
+        └── comparativa_embeddings.png
 ```
 
 ---
@@ -206,7 +226,7 @@ Se comparará el desempeño del sistema con un enfoque sin IA, tomando como refe
 
 ```bash
 # 1. Cloná el repositorio
-git clone https://https://github.com/joaquincernik/inteligencia-artificial-final
+git clone https://github.com/joaquincernik/inteligencia-artificial-final
 
 # 2. Creá el entorno virtual e instalá las dependencias con uv
 uv venv --python 3.10
@@ -225,10 +245,16 @@ Copiá el archivo de ejemplo y completá con tus credenciales:
 cp .env.example .env
 ```
 
-Las variables principales son:
+Las variables principales son (el listado completo y comentado está en [`.env.example`](.env.example)):
 
 ```env
 GOOGLE_API_KEY=tu_api_key_aqui
+OPENAI_API_KEY=tu_openai_api_key_aqui
+GROQ_API_KEY=tu_groq_api_key_aqui
+
+# Cloudflare Workers AI (para embeddings alternativos)
+CLOUDFLARE_ACCOUNT_ID=tu_account_id_aqui
+CLOUDFLARE_API_TOKEN=tu_api_token_aqui
 
 # Catálogo de modelos disponibles (elegí el activo en MODEL_NAME):
 MODEL_1=google_genai:gemini-3.1-flash-lite
@@ -241,9 +267,14 @@ MODEL_6=groq:openai/gpt-oss-safeguard-20b
 # Modelo activo (referenciá una variable definida arriba):
 MODEL_NAME=${MODEL_2}
 
+# Configuración MITRE RAG
+EMBEDDING_MODEL=models/gemini-embedding-001
+MITRE_STIX_URL=https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/enterprise-attack/enterprise-attack.json
+MITRE_DATA_DIR=data/mitre
+
 # Configuración Wazuh
 WAZUH_API_URL=https://localhost:55000
-WAZUH_API_USER=admin
+WAZUH_API_USER=wazuh-wui
 WAZUH_API_PASSWORD=tu_password_aqui
 WAZUH_INDEXER_URL=https://localhost:9200
 WAZUH_INDEXER_USER=admin
@@ -375,21 +406,23 @@ La tool devuelve, entre otros campos:
 }
 ```
 
-Herramientas con soporte PDF: `run_nmap_scan`, `wazuh_search_alerts`, `wazuh_mitre_coverage` y `search_mitre_attack`. Los archivos se guardan en `reports/` (ignorado por git).
+Herramientas con soporte PDF: `run_nmap_scan`, `wazuh_search_alerts`, `wazuh_mitre_coverage` y `search_mitre_attack`. Los reportes `.md` y `.pdf` generados se guardan en `reports/` y están ignorados por git (`.gitignore`); los CSV de evaluación que ya están en esa carpeta sí se versionan.
 
 ---
 
 ## 🗺️ Roadmap
 
-### Para próximas iteraciones (Entrega Final)
-- [ ] **Evaluación cuantitativa de Retrieval:** Implementación de métricas *Hit Rate@K*, *Mean Reciprocal Rank (MRR)* y *Recall@K* sobre un dataset de pruebas con logs/alertas de Wazuh mapeados a técnicas MITRE ATT&CK.
-- [ ] **Evaluación de generación LLM:** Medición de *Fidelidad (Faithfulness)* y *Relevancia de la Respuesta (Answer Relevance)* utilizando [Ragas](https://docs.ragas.io/) integrado con [LangSmith](https://www.langchain.com/langsmith).
-- [ ] **Baseline comparativo:** Comparación entre el sistema Capazeta, búsqueda manual por analista SOC y búsqueda tradicional por palabras clave (keyword/BM25) sobre el catálogo MITRE ATT&CK.
-- [ ] **Contrastación con otras verticales de ciberseguridad:** Integración y mapeo a marcos complementarios como **MITRE D3FEND** (contramedidas defensivas), **ATT&CK for Cloud**, **ATT&CK for Mobile** y **ATT&CK for ICS**, permitiendo contrastar hallazgos entre diferentes dominios y enriquecer el razonamiento del agente.
-- [x] **Exportación de reportes a PDF:** Implementada con `save_pdf=True` en `run_nmap_scan`, `wazuh_search_alerts`, `wazuh_mitre_coverage` y `search_mitre_attack`. El Markdown de `report.py` se renderiza a PDF con ReportLab en `src/capazeta/tools/pdf_report.py`.
-- [ ] **Persistencia de conversaciones:** Incorporación de persistencia de hilos con base de datos (PostgreSQL / SQLite Checkpointer).
-- [ ] **Ampliación de herramientas:** Reactivar las verticales `web_apis`, `mobile` y `ot_ics` (hoy comentadas en el grafo) una vez que cuenten con herramientas propias.
-- [ ] **Interfaz amigable** En lugar de seguir utilizando la terminal como interaccion migrarlo a la web o a una interfaz mas amigable para el usuario, por ejemplo con herramientas como Streamlit, Chainlit o Gradio.
+### Completado
+- [x] **Evaluación cuantitativa de Retrieval:** métricas *Hit@5* y *MRR* sobre 31 alertas de Wazuh anotadas con técnicas MITRE ATT&CK. Ver [Resultados](#-resultados).
+- [x] **Baseline comparativo léxico:** implementación y evaluación de TF-IDF contra los modelos de embeddings (32.26 % de Hit@5 vs. 67.74 % del mejor modelo semántico).
+- [x] **Exportación de reportes a PDF:** implementada con `save_pdf=True` en `run_nmap_scan`, `wazuh_search_alerts`, `wazuh_mitre_coverage` y `search_mitre_attack`. El Markdown de `report.py` se renderiza a PDF con ReportLab en `src/capazeta/tools/pdf_report.py`.
+
+### Para próximas iteraciones
+- [ ] **Evaluación de generación LLM:** medición de *Fidelidad (Faithfulness)* y *Relevancia de la Respuesta (Answer Relevance)* utilizando [Ragas](https://docs.ragas.io/) integrado con [LangSmith](https://www.langchain.com/langsmith).
+- [ ] **Contrastación con otras verticales de ciberseguridad:** integración y mapeo a marcos complementarios como **MITRE D3FEND** (contramedidas defensivas), **ATT&CK for Cloud**, **ATT&CK for Mobile** y **ATT&CK for ICS**, permitiendo contrastar hallazgos entre diferentes dominios y enriquecer el razonamiento del agente.
+- [ ] **Persistencia de conversaciones:** incorporación de persistencia de hilos con base de datos (PostgreSQL / SQLite Checkpointer).
+- [ ] **Ampliación de herramientas:** reactivar las verticales `web_apis`, `mobile` y `ot_ics` (hoy comentadas en el grafo) una vez que cuenten con herramientas propias.
+- [ ] **Interfaz amigable:** migrar la interacción de la terminal a una interfaz web o más amigable para el usuario, por ejemplo con herramientas como Streamlit, Chainlit o Gradio.
 
 ---
 

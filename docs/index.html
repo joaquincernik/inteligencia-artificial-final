@@ -3,47 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nombre del Proyecto</title>
-  <meta name="description" content="Una línea describiendo el proyecto para buscadores y redes sociales.">
+  <title>Capazeta — Asistente multi-agente de ciberseguridad</title>
+  <meta name="description" content="Capazeta es un asistente multi-agente de ciberseguridad construido con LangGraph y LangChain que combina Nmap, Wazuh y un RAG sobre MITRE ATT&CK.">
   <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
 
-  <!--
-    GUÍA RÁPIDA (borrar este comentario antes de publicar):
-    - Reemplazá todo el texto entre [corchetes].
-    - Las imágenes van en docs/img/ — reemplazá los src de ejemplo por los tuyos.
-    - Esta página no tiene build step: es HTML/CSS plano, lista para GitHub Pages
-      (Settings → Pages → Source: branch "main", carpeta "/docs").
-    - No hace falta JavaScript para que funcione. Si necesitás algo interactivo,
-      documentalo aparte en el README en vez de agregarlo acá (ver AGENTS.md).
-  -->
-
   <nav>
     <div class="container">
-      <span class="brand">[Nombre del Proyecto]</span>
+      <span class="brand">Capazeta</span>
       <ul>
         <li><a href="#sobre">Sobre</a></li>
         <li><a href="#demo">Demo</a></li>
         <li><a href="#resultados">Resultados</a></li>
-        <li><a href="#autores">Autores</a></li>
+        <li><a href="#autor">Autor</a></li>
+        <li><a href="https://github.com/joaquincernik/inteligencia-artificial-final">GitHub</a></li>
       </ul>
     </div>
   </nav>
 
   <header class="hero">
     <div class="container">
-      <h1>[Nombre del Proyecto]</h1>
-      <p class="tagline">[Una frase de una línea: qué hace el proyecto y para quién]</p>
+      <h1>Capazeta</h1>
+      <p class="tagline">
+        Asistente multi-agente de ciberseguridad que enruta cada consulta a un especialista
+        en redes, SOC o threat intelligence, con recuperación semántica sobre MITRE ATT&amp;CK.
+      </p>
 
       <div class="badges">
-        <img src="https://img.shields.io/badge/python-3.11-blue.svg" alt="Python 3.11">
+        <img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+">
         <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License">
+        <img src="https://img.shields.io/badge/status-MVP%20funcional-brightgreen.svg" alt="MVP funcional">
       </div>
 
       <div class="cta-row">
-        <a class="btn btn-primary" href="https://github.com/TU-USUARIO/TU-REPOSITORIO">Ver repositorio</a>
-        <a class="btn btn-secondary" href="https://github.com/TU-USUARIO/TU-REPOSITORIO#readme">Leer el README</a>
+        <a class="btn btn-primary" href="https://github.com/joaquincernik/inteligencia-artificial-final">Ver repositorio</a>
+        <a class="btn btn-secondary" href="https://github.com/joaquincernik/inteligencia-artificial-final#readme">Leer el README</a>
       </div>
     </div>
   </header>
@@ -51,28 +46,68 @@
   <section id="demo">
     <div class="container">
       <h2>Demo</h2>
-      <p>[Una o dos líneas de contexto sobre lo que se ve en la demo/captura.]</p>
+      <p class="lead">
+        Capazeta se ejecuta desde la terminal con <code>uv run capazeta</code>. El router
+        clasifica el pedido y lo deriva al subagente de dominio, que decide qué herramientas
+        invocar antes de responder.
+      </p>
+
       <div class="demo-media">
-        <img src="img/demo.gif" alt="Demo del proyecto funcionando">
+        <img src="img/cli.png" alt="Capazeta respondiendo una consulta en la terminal">
       </div>
+      <p class="caption">Enrutamiento automático y respuesta del subagente en la CLI (Rich).</p>
+
+      <div class="demo-media">
+        <img src="img/grafico.png" alt="Diagrama del grafo de agentes de Capazeta">
+      </div>
+      <p class="caption">Grafo LangGraph: router central, subagentes por dominio y nodos de herramientas.</p>
     </div>
   </section>
 
   <section id="sobre">
     <div class="container">
       <h2>Sobre el proyecto</h2>
-      <p>
-        [Descripción del problema que resuelve el proyecto, el enfoque elegido,
-        y por qué es interesante — 2 a 3 párrafos, igual que la sección "Sobre el
-        proyecto" del README, pero en un tono más de portfolio que técnico.]
+      <p class="lead">
+        Los equipos de seguridad dedican buena parte de su tiempo a tareas repetitivas:
+        interpretar alertas de un SIEM, mapearlas a técnicas de ataque conocidas y decidir
+        qué revisar primero. Capazeta automatiza ese primer triaje combinando herramientas
+        reales con un modelo de lenguaje y una base de conocimiento estructurada.
       </p>
+      <p class="lead">
+        El sistema está construido sobre <strong>LangGraph</strong> y <strong>LangChain</strong>.
+        Un router central analiza cada consulta y la deriva a uno de los tres subagentes
+        activos. Cada subagente puede ejecutar herramientas en un bucle de <em>tool calling</em>
+        y devolver una respuesta fundamentada en los resultados obtenidos.
+      </p>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h3>Infraestructura y redes</h3>
+          <p>Escaneos con Nmap, validación de parámetros contra una lista blanca y análisis de exposición de servicios.</p>
+        </div>
+        <div class="feature-card">
+          <h3>SOC / Logs y eventos</h3>
+          <p>Consulta de agentes y alertas en la API y el Indexer de Wazuh, triaje y generación de reportes.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Threat intelligence</h3>
+          <p>Búsqueda semántica sobre un índice FAISS de MITRE ATT&amp;CK para mapear hallazgos a técnicas y tácticas.</p>
+        </div>
+      </div>
 
       <h3>Construido con</h3>
       <div class="pills">
-        <span class="pill">Python</span>
-        <span class="pill">pandas</span>
-        <span class="pill">scikit-learn</span>
-        <span class="pill">[otra librería]</span>
+        <span class="pill">Python 3.10+</span>
+        <span class="pill">LangGraph</span>
+        <span class="pill">LangChain</span>
+        <span class="pill">FAISS</span>
+        <span class="pill">Wazuh</span>
+        <span class="pill">Nmap</span>
+        <span class="pill">ReportLab</span>
+        <span class="pill">Rich</span>
+        <span class="pill">LangSmith</span>
+        <span class="pill">Docker</span>
+        <span class="pill">uv</span>
       </div>
     </div>
   </section>
@@ -80,37 +115,106 @@
   <section id="resultados">
     <div class="container">
       <h2>Resultados</h2>
+      <p class="lead">
+        Se evaluó el módulo de recuperación sobre <strong>31 alertas reales de Wazuh</strong>
+        anotadas con su técnica MITRE ATT&amp;CK correcta. Cada sistema debía devolver las
+        5 técnicas más probables para cada alerta.
+      </p>
 
       <div class="stats">
         <div class="stat-card">
-          <div class="value">[0.00]</div>
-          <div class="label">[Métrica 1]</div>
+          <div class="value">67.74 %</div>
+          <div class="label">Hit@5 — Gemini embedding-001</div>
         </div>
         <div class="stat-card">
-          <div class="value">[0.00]</div>
-          <div class="label">[Métrica 2]</div>
+          <div class="value">0.4866</div>
+          <div class="label">MRR — Gemini embedding-001</div>
         </div>
         <div class="stat-card">
-          <div class="value">[0.00]</div>
-          <div class="label">[Métrica 3]</div>
+          <div class="value">+35.48 pp</div>
+          <div class="label">Hit@5 vs. baseline TF-IDF</div>
         </div>
       </div>
 
-      <div class="demo-media">
-        <img src="img/resultados.png" alt="Gráfico de resultados">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Modelo / Sistema</th>
+              <th>Tipo / Proveedor</th>
+              <th>Muestras</th>
+              <th>Hit@5</th>
+              <th>MRR</th>
+              <th>Latencia prom.</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Gemini embedding-001</strong></td>
+              <td>Semántico / Google Cloud</td>
+              <td>31</td>
+              <td><strong>67.74 %</strong></td>
+              <td><strong>0.4866</strong></td>
+              <td>636.4 ms</td>
+            </tr>
+            <tr>
+              <td>Qwen3 embedding-0.6b</td>
+              <td>Semántico / Cloudflare Workers AI</td>
+              <td>31</td>
+              <td>54.84 %</td>
+              <td>0.3989</td>
+              <td>2012.0 ms</td>
+            </tr>
+            <tr>
+              <td>BGE-Large-EN-v1.5</td>
+              <td>Semántico / Cloudflare Workers AI</td>
+              <td>31</td>
+              <td>51.61 %</td>
+              <td>0.3505</td>
+              <td>651.7 ms</td>
+            </tr>
+            <tr>
+              <td>Plamo embedding-1b</td>
+              <td>Semántico / Cloudflare Workers AI</td>
+              <td>14*</td>
+              <td>50.00 %</td>
+              <td>0.3952</td>
+              <td>748.9 ms</td>
+            </tr>
+            <tr>
+              <td><strong>Baseline (TF-IDF)</strong></td>
+              <td>Léxico tradicional / algorítmico</td>
+              <td>31</td>
+              <td>32.26 %</td>
+              <td>0.2769</td>
+              <td><strong>6.8 ms</strong></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+      <p class="caption">
+        *Plamo procesó 14 de las 31 alertas antes de que se interrumpiera el experimento;
+        es un modelo orientado principalmente al japonés.
+      </p>
+
+      <div class="demo-media">
+        <img src="img/comparativa_embeddings.png" alt="Gráfico comparativo de modelos de embeddings">
+      </div>
+      <p class="caption">
+        Comparativa de Hit@5, MRR y latencia entre los modelos evaluados y el baseline TF-IDF.
+      </p>
     </div>
   </section>
 
-  <section id="autores">
+  <section id="autor">
     <div class="container">
-      <h2>Autores</h2>
+      <h2>Autor</h2>
       <div class="authors">
         <div class="author-card">
-          <div class="name">[Nombre Apellido]</div>
+          <div class="name">Joaquin Cernik</div>
           <div class="links">
-            <a href="https://github.com/usuario">GitHub</a>
-            <a href="https://linkedin.com/in/usuario">LinkedIn</a>
+            <a href="https://github.com/joaquincernik">GitHub</a>
+            <a href="https://linkedin.com/in/joaquincernik">LinkedIn</a>
           </div>
         </div>
       </div>
@@ -120,8 +224,9 @@
   <footer>
     <div class="container">
       <p>
-        Trabajo final — [Nombre de la materia] · [Institución] · [Año]<br>
-        <a href="https://github.com/TU-USUARIO/TU-REPOSITORIO">Código fuente en GitHub</a>
+        Trabajo final — Inteligencia Artificial · Instituto Universitario Aeronáutico · 2026<br>
+        <a href="https://github.com/joaquincernik/inteligencia-artificial-final">Código fuente en GitHub</a>
+        · <a href="https://github.com/joaquincernik/inteligencia-artificial-final/blob/main/LICENSE">Licencia MIT</a>
       </p>
     </div>
   </footer>
