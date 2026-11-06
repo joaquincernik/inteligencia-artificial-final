@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Capazeta — Asistente multi-agente de ciberseguridad</title>
+  <meta name="description" content="Capazeta es un asistente multi-agente de ciberseguridad construido con LangGraph y LangChain que combina Nmap, Wazuh y un RAG sobre MITRE ATT&CK.">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+  <nav>
+    <div class="container">
+      <span class="brand">Capazeta</span>
+      <ul>
+        <li><a href="#sobre">Sobre</a></li>
+        <li><a href="#demo">Demo</a></li>
+        <li><a href="#resultados">Resultados</a></li>
+        <li><a href="#autor">Autor</a></li>
+        <li><a href="https:/github.com/joaquincernik/inteligencia-artificial-final">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="container">
+      <h1>Capazeta</h1>
+      <p class="tagline">
+        Asistente multi-agente de ciberseguridad que enruta cada consulta a un especialista
+        en redes, SOC o threat intelligence, con recuperación semántica sobre MITRE ATT&amp;CK.
+      </p>
+
+      <div class="badges">
+        <img src="https:/img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+">
+        <img src="https:/img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License">
+        <img src="https:/img.shields.io/badge/status-MVP%20funcional-brightgreen.svg" alt="MVP funcional">
+      </div>
+
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https:/github.com/joaquincernik/inteligencia-artificial-final">Ver repositorio</a>
+        <a class="btn btn-secondary" href="https:/github.com/joaquincernik/inteligencia-artificial-final#readme">Leer el README</a>
+      </div>
+    </div>
+  </header>
+
+  <section id="demo">
+    <div class="container">
+      <h2>Demo — Trabajo Final</h2>
+      <p class="lead">
+        Demostración del flujo completo implementado en el <strong>Notebook 05: Demo Trabajo Final</strong>,
+        cubriendo la configuración del entorno, enrutamiento automático hacia subagentes especializados,
+        ejecución segura de herramientas (<em>allowlist</em>), y consulta directa al RAG sobre MITRE ATT&amp;CK en las tres verticales operativas.
+      </p>
+
+      <!-- 0. Configuración del entorno -->
+      <div class="demo-block">
+        <h3>0. Configuración del Entorno y Verificación de Agentes</h3>
+        <p>Iniciamos el asistente con <code>uv run capazeta</code>, verificamos la conectividad con el SIEM (Wazuh) y confirmamos los agentes activos en el sistema:</p>
+
+        <div class="demo-media">
+          <img src="img/image.png" alt="Inicio del agente Capazeta en consola CLI">
+        </div>
+        <p class="caption">Inicio del CLI interactivo de Capazeta con interfaz Rich.</p>
+
+        <div class="demo-media">
+          <img src="img/01_demo_MVP/image.png" alt="Panel de control Wazuh SOC activo">
+        </div>
+        <p class="caption">Servicios del SOC (Wazuh Manager/Indexer) levantados y operativos.</p>
+
+        <div class="demo-media">
+          <img src="img/01_demo_MVP/image copy.png" alt="Agente Linux reportando al SIEM">
+        </div>
+        <p class="caption">Agente de monitoreo Linux reportando telemetría en tiempo real.</p>
+
+        <div class="demo-media">
+          <img src="img/image copy.png" alt="Consulta CLI sobre agentes activos en Wazuh">
+        </div>
+        <p class="caption">Verificación en CLI: <code>Prompt> ¿qué agentes hay reportando a wazuh en este momento?</code></p>
+      </div>
+
+      <!-- 1. Enrutamiento automático -->
+      <div class="demo-block">
+        <h3>1. Enrutamiento Automático hacia el Dominio Correspondiente</h3>
+        <p>El nodo central <strong>router</strong> analiza la intención de la consulta en lenguaje natural y la canaliza dinámicamente hacia el subagente especialista sin invocar herramientas innecesarias.</p>
+
+        <div class="demo-media">
+          <img src="img/grafico.png" alt="Arquitectura del Grafo LangGraph de Capazeta">
+        </div>
+        <p class="caption">Grafo LangGraph: Router central, subagentes por dominio y nodos de herramientas.</p>
+
+        <h4>A. Redirección a <code>infraestructura_redes</code></h4>
+        <blockquote>
+          <p><strong>Prompt:</strong> "¿Cuáles son las mejores prácticas teóricas para segmentar una red corporativa utilizando VLANs sin realizar escaneos activos?"</p>
+        </blockquote>
+        <div class="demo-media">
+          <img src="img/image copy 2.png" alt="Respuesta del subagente infraestructura_redes">
+        </div>
+
+        <h4>B. Redirección a <code>threat_intel</code></h4>
+        <blockquote>
+          <p><strong>Prompt:</strong> "¿Cuáles son las mejores prácticas teóricas para segmentar una red corporativa utilizando VLANs sin realizar escaneos activos?. Sé muy breve"</p>
+        </blockquote>
+        <div class="demo-media">
+          <img src="img/image copy 3.png" alt="Respuesta del subagente threat_intel">
+        </div>
+
+        <h4>C. Redirección a <code>soc_logs</code></h4>
+        <blockquote>
+          <p><strong>Prompt:</strong> "¿Qué diferencias operativas existen entre centralizar logs mediante Syslog rsyslog vs un agente liviano como Wazuh Agent?"</p>
+        </blockquote>
+        <div class="demo-media">
+          <img src="img/image copy 4.png" alt="Respuesta del subagente soc_logs">
+        </div>
+      </div>
+
+      <!-- 2. Tools Hardening y reportes -->
+      <div class="demo-block">
+        <h3>2. Tools Hardening y Generación de Reportes</h3>
+        <p>Demostración de ejecución de escaneo de red utilizando <code>infra_tools</code> bajo la lista blanca de argumentos (<em>allowlist</em>) de Nmap para prevenir inyecciones de código o parámetros no autorizados por parte del LLM.</p>
+
+        <blockquote>
+          <p><strong>Prompt:</strong> "Realiza un escaneo de red rápido con nmap sobre 192.168.0.0/24 para identificar hosts activos y puertos abiertos principales. Guarda el resultado en un reporte en formato Markdown y en pdf dentro de la carpeta reports."</p>
+        </blockquote>
+
+        <div class="demo-media">
+          <img src="img/image copy 6.png" alt="Ejecución segura de Nmap en consola">
+        </div>
+        <p class="caption">Escaneo Nmap ejecutado de forma segura aplicando la allowlist de parámetros.</p>
+
+        <p class="caption-lead">Reportes consolidados generados en disco en formatos Markdown y PDF:</p>
+        <div class="demo-media">
+          <img src="img/image copy 7.png" alt="Reporte en formato Markdown generado en disco">
+        </div>
+        <div class="demo-media">
+          <img src="img/image copy 8.png" alt="Reporte en formato PDF generado con ReportLab">
+        </div>
+      </div>
+
+      <!-- 3. Consulta directa al RAG por Vertical -->
+      <div class="demo-block">
+        <h3>3. Consulta Directa al RAG de MITRE ATT&amp;CK (FAISS)</h3>
+
+        <!-- Vertical 1 -->
+        <div class="vertical-card">
+          <h4>Vertical 1: Infraestructura de Redes (<code>infraestructura_redes</code>)</h4>
+          <p><strong>Caso de Uso:</strong> Evaluación de exposición de servicios y correlación de mitigaciones según la matriz MITRE ATT&amp;CK.</p>
+          <blockquote>
+            <p><strong>Prompt:</strong> "Dirígete al agente infraestructura_redes. Ejecuta un escaneo sobre el host objetivo 192.168.0.26 utilizando infra_tools. Una vez identificados los puertos y servicios expuestos, consulta en el RAG la técnica MITRE relacionada con el descubrimiento de servicios de red (Network Service Discovery)."</p>
+          </blockquote>
+
+          <div class="demo-media">
+            <img src="img/image copy 9.png" alt="Ejecución RAG en Infraestructura de redes">
+          </div>
+
+          <div class="analysis-box">
+            <h5>1. Análisis de la ejecución (Lo que hizo el agente)</h5>
+            <ul>
+              <li><strong>Enrutamiento:</strong> El nodo <code>router</code> interceptó la solicitud y la derivó directamente al agente especialista <code>infraestructura_redes</code>.</li>
+              <li><strong>Uso de Tools:</strong> El agente ejecutó la herramienta <code>infra_tools</code> invocando <code>nmap</code> de forma segura (aplicando la <em>allowlist</em> de parámetros) sobre la IP <code>192.168.0.26</code> para auditar los puertos activos.</li>
+              <li><strong>Consulta RAG:</strong> Con los puertos identificados, realizó la búsqueda vectorial en el índice FAISS consultando por el concepto <em>"Network Service Discovery"</em>.</li>
+              <li><strong>Síntesis:</strong> Correlacionó los hallazgos técnicos del escaneo activo con la ficha oficial de MITRE ATT&amp;CK y entregó la descripción contextualizada del riesgo.</li>
+            </ul>
+
+            <h5>2. Resultado Esperado</h5>
+            <p>Se esperaba que el agente aislara el flujo en la vertical de red, ejecutara un escaneo válido sobre el host objetivo, identificara la técnica exacta de MITRE asociada al escaneo de servicios (<code>T1046</code>) y presentara una propuesta de mitigación orientada a infraestructura.</p>
+
+            <h5>3. Por qué funcionó correctamente</h5>
+            <ul>
+              <li><strong>Validación de Parámetros:</strong> La lista blanca de argumentos de <code>nmap</code> evitó que el LLM introdujera <em>flags</em> no permitidos o peligrosos durante el escaneo.</li>
+              <li><strong>Recuperación Semántica Fiel:</strong> El modelo de <em>embeddings</em> asoció la descripción de los servicios abiertos con la entrada vectorial de <code>T1046</code> (Network Service Discovery), superando la limitación de coincidencias textuales rígidas.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Vertical 2 -->
+        <div class="vertical-card">
+          <h4>Vertical 2: Threat Intelligence (<code>threat_intel</code>)</h4>
+          <p><strong>Caso de Uso:</strong> Caracterización de persistencia y evasión ante la detección de scripts o unidades de servicio sospechosas.</p>
+          <blockquote>
+            <p><strong>Prompt:</strong> "Dirígete al agente threat_intel. Analiza el evento donde se detectó la creación de un nuevo servicio en /etc/systemd/system/ seguido de la eliminación de archivos temporales en /tmp/. Utiliza el RAG sobre la base de datos de MITRE ATT&amp;CK para identificar las técnicas y subtécnicas correspondientes a la creación de servicios en Linux y la eliminación de evidencia. Genera un informe de Threat Intelligence en Markdown que detalle el comportamiento del atacante y sugiera reglas de detección para implementar en Wazuh."</p>
+          </blockquote>
+
+          <div class="demo-media">
+            <img src="img/image copy 10.png" alt="Ejecución RAG en Threat Intelligence">
+          </div>
+
+          <div class="analysis-box">
+            <h5>1. Análisis de la ejecución (Lo que hizo el agente)</h5>
+            <ul>
+              <li><strong>Enrutamiento:</strong> El <code>router</code> delegó la orden al subgrafo especialista <code>threat_intel</code>.</li>
+              <li><strong>Descomposición Semántica:</strong> El agente identificó dos vectores tácticos en la narrativa del prompt y realizó dos búsquedas vectoriales simultáneas en FAISS:
+                <ul>
+                  <li>Creación de persistencia mediante archivos de servicio &rarr; <code>T1543.002</code> (Systemd Service).</li>
+                  <li>Borrado de artefactos en <code>/tmp/</code> &rarr; <code>T1070.004</code> (File Deletion).</li>
+                </ul>
+              </li>
+              <li><strong>Generación de Artefactos:</strong> Construyó un informe en Markdown donde analizó la intención del atacante y propuso reglas XML específicas para cargar en el SIEM Wazuh.</li>
+            </ul>
+
+            <h5>2. Resultado Esperado</h5>
+            <p>Se esperaba que el agente mapeara correctamente ambas acciones del atacante a sus respectivas técnicas y subtécnicas de Linux dentro del marco MITRE ATT&amp;CK, redactando un reporte formal de inteligencia con reglas de detección accionables sin requerir escaneos de red.</p>
+
+            <h5>3. Por qué funcionó correctamente</h5>
+            <ul>
+              <li><strong>Mapeo Multidimensional RAG:</strong> La base vectorial capturó la equivalencia entre rutas del sistema operativo (<code>/etc/systemd/system/</code>) y su abstracción dentro del framework (<code>T1543.002</code>), así como la acción sobre <code>/tmp/</code> con la evasión de defensas (<code>T1070.004</code>).</li>
+              <li><strong>Especialización del Dominio:</strong> Al no requerir ejecución de herramientas de red, el subgrafo procesó la consulta íntegramente combinando inferencia del LLM y contexto recuperado del RAG.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Vertical 3 -->
+        <div class="vertical-card">
+          <h4>Vertical 3: SOC Logs (<code>soc_logs</code>)</h4>
+          <p><strong>Caso de Uso:</strong> Enriquecimiento de alertas de Wazuh en tiempo real e identificación de patrones de escalada de privilegios.</p>
+          <blockquote>
+            <p><strong>Prompt:</strong> "Dirígete al agente soc_logs. Examina los registros de alertas recientes cargados por Wazuh en relación con el agente Linux ubuntuLocal. Se observan múltiples fallos de autenticación en auth.log seguidos por una modificación en /etc/sudoers. Utiliza el RAG para mapear este patrón de ataque a las técnicas de Fuerza Bruta y Escalada de Privilegios de MITRE ATT&amp;CK. Luego, consulta las herramientas del SOC para extraer los logs detallados y construye la línea de tiempo del incidente en un reporte pdf"</p>
+          </blockquote>
+
+          <div class="demo-media">
+            <img src="img/image copy 12.png" alt="Ejecución RAG en SOC Logs - Consola CLI">
+          </div>
+
+          <div class="demo-media">
+            <img src="img/image copy 13.png" alt="Ejecución RAG en SOC Logs - Generación de reporte PDF">
+          </div>
+
+          <div class="analysis-box">
+            <h5>1. Análisis de la ejecución (Lo que hizo el agente)</h5>
+            <ul>
+              <li><strong>Enrutamiento Dinámico:</strong> El nodo <code>router</code> identificó la intención de análisis de eventos del SIEM y canalizó el flujo hacia el agente especializado <code>soc_logs</code>.</li>
+              <li><strong>Invocación Interactiva de Tools y RAG:</strong> Tal como refleja la traza de la consola, el agente ejecutó una secuencia coordinada de acciones:
+                <ul>
+                  <li><code>Consultando Wazuh...</code>: Invocó <code>soc_tools</code> para realizar consultas activas al Indexer/API de Wazuh sobre el agente <code>ubuntuLocal</code> (ID: 001).</li>
+                  <li><code>Buscando en MITRE ATT&amp;CK...</code>: Ejecutó una búsqueda semántica en la base vectorial FAISS para mapear el comportamiento detectado.</li>
+                  <li><code>Consultando Wazuh...</code>: Reconsultó la telemetría histórica de <code>auditd</code> para extraer los eventos exactos de comandos ejecutados (<code>/usr/bin/docker</code>, <code>/usr/bin/git</code>, <code>/usr/bin/uname</code>, etc.).</li>
+                  <li><strong>Mapeo Táctico Identificado:</strong>
+                    <ul>
+                      <li>Acceso a Credenciales / Fuerza Bruta: Mapeado a <code>T1110</code> (Brute Force).</li>
+                      <li>Escalada de Privilegios: Mapeado a <code>T1548.003</code> (Sudo and Sudo Caching) y <code>T1068</code> (Exploitation for Privilege Escalation), asociándolo a la modificación anómala de <code>/etc/sudoers</code>.</li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+              <li><strong>Exportación de Artefactos:</strong> Generó y guardó exitosamente el informe de auditoría consolidado en el sistema de archivos: <code>reports/wazuh_alerts_20261106-114422.pdf</code>, incluyendo la tabla detallada con alertas procesadas, IDs de regla (ej. 80792) y comandos auditados.</li>
+            </ul>
+
+            <h5>2. Resultado Esperado</h5>
+            <p>Se esperaba que el agente especialista en logs integrara la lectura activa del SIEM (Wazuh) con el marco conceptual del RAG (MITRE ATT&amp;CK) para caracterizar un vector de ataque compuesto (acceso inicial por fuerza bruta seguido de una elevación de privilegios en Linux), finalizando con la exportación persistente de un reporte PDF listo para entrega ejecutiva o de auditoría.</p>
+
+            <h5>3. Por qué funcionó correctamente</h5>
+            <ul>
+              <li><strong>Orquestación Multi-paso (Grafo + Tools):</strong> El agente no intentó adivinar la información; alternó de forma autónoma entre consultar el motor vectorial FAISS y realizar llamadas de API a las herramientas del SOC (<code>soc_tools</code>).</li>
+              <li><strong>Precisión Semántica del RAG:</strong> El modelo de <em>embeddings</em> asoció la narrativa de la alerta (modificación de <code>/etc/sudoers</code>) con la técnica específica <code>T1548.003</code>, algo que una regla rígida de búsqueda léxica sin IA habría pasado por alto o catalogado de manera incompleta.</li>
+              <li><strong>Cierre de Ciclo Operativo:</strong> El agente completó el flujo integral desde la entrada en lenguaje natural hasta la persistencia física de un documento PDF con formato institucional en disco.</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <section id="sobre">
+    <div class="container">
+      <h2>Sobre el proyecto</h2>
+      <p class="lead">
+        Los equipos de seguridad dedican buena parte de su tiempo a tareas repetitivas:
+        interpretar alertas de un SIEM, mapearlas a técnicas de ataque conocidas y decidir
+        qué revisar primero. Capazeta automatiza ese primer triaje combinando herramientas
+        reales con un modelo de lenguaje y una base de conocimiento estructurada.
+      </p>
+      <p class="lead">
+        El sistema está construido sobre <strong>LangGraph</strong> y <strong>LangChain</strong>.
+        Un router central analiza cada consulta y la deriva a uno de los tres subagentes
+        activos. Cada subagente puede ejecutar herramientas en un bucle de <em>tool calling</em>
+        y devolver una respuesta fundamentada en los resultados obtenidos.
+      </p>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h3>Infraestructura y redes</h3>
+          <p>Escaneos con Nmap, validación de parámetros contra una lista blanca y análisis de exposición de servicios.</p>
+        </div>
+        <div class="feature-card">
+          <h3>SOC / Logs y eventos</h3>
+          <p>Consulta de agentes y alertas en la API y el Indexer de Wazuh, triaje y generación de reportes.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Threat intelligence</h3>
+          <p>Búsqueda semántica sobre un índice FAISS de MITRE ATT&amp;CK para mapear hallazgos a técnicas y tácticas.</p>
+        </div>
+      </div>
+
+      <h3>Construido con</h3>
+      <div class="pills">
+        <span class="pill">Python 3.10+</span>
+        <span class="pill">LangGraph</span>
+        <span class="pill">LangChain</span>
+        <span class="pill">FAISS</span>
+        <span class="pill">Wazuh</span>
+        <span class="pill">Nmap</span>
+        <span class="pill">ReportLab</span>
+        <span class="pill">Rich</span>
+        <span class="pill">LangSmith</span>
+        <span class="pill">Docker</span>
+        <span class="pill">uv</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="resultados">
+    <div class="container">
+      <h2>Resultados</h2>
+      <p class="lead">
+        Se evaluó el módulo de recuperación sobre <strong>31 alertas reales de Wazuh</strong>
+        anotadas con su técnica MITRE ATT&amp;CK correcta. Cada sistema debía devolver las
+        5 técnicas más probables para cada alerta.
+      </p>
+
+      <div class="stats">
+        <div class="stat-card">
+          <div class="value">67.74 %</div>
+          <div class="label">Hit@5 — Gemini embedding-001</div>
+        </div>
+        <div class="stat-card">
+          <div class="value">0.4866</div>
+          <div class="label">MRR — Gemini embedding-001</div>
+        </div>
+        <div class="stat-card">
+          <div class="value">+35.48 pp</div>
+          <div class="label">Hit@5 vs. baseline TF-IDF</div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Modelo / Sistema</th>
+              <th>Tipo / Proveedor</th>
+              <th>Muestras</th>
+              <th>Hit@5</th>
+              <th>MRR</th>
+              <th>Latencia prom.</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Gemini embedding-001</strong></td>
+              <td>Semántico / Google Cloud</td>
+              <td>31</td>
+              <td><strong>67.74 %</strong></td>
+              <td><strong>0.4866</strong></td>
+              <td>636.4 ms</td>
+            </tr>
+            <tr>
+              <td>Qwen3 embedding-0.6b</td>
+              <td>Semántico / Cloudflare Workers AI</td>
+              <td>31</td>
+              <td>54.84 %</td>
+              <td>0.3989</td>
+              <td>2012.0 ms</td>
+            </tr>
+            <tr>
+              <td>BGE-Large-EN-v1.5</td>
+              <td>Semántico / Cloudflare Workers AI</td>
+              <td>31</td>
+              <td>51.61 %</td>
+              <td>0.3505</td>
+              <td>651.7 ms</td>
+            </tr>
+            <tr>
+              <td>Plamo embedding-1b</td>
+              <td>Semántico / Cloudflare Workers AI</td>
+              <td>14*</td>
+              <td>50.00 %</td>
+              <td>0.3952</td>
+              <td>748.9 ms</td>
+            </tr>
+            <tr>
+              <td><strong>Baseline (TF-IDF)</strong></td>
+              <td>Léxico tradicional / algorítmico</td>
+              <td>31</td>
+              <td>32.26 %</td>
+              <td>0.2769</td>
+              <td><strong>6.8 ms</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="caption">
+        *Plamo procesó 14 de las 31 alertas antes de que se interrumpiera el experimento;
+        es un modelo orientado principalmente al japonés.
+      </p>
+
+      <div class="demo-media">
+        <img src="img/comparativa_embeddings.png" alt="Gráfico comparativo de modelos de embeddings">
+      </div>
+      <p class="caption">
+        Comparativa de Hit@5, MRR y latencia entre los modelos evaluados y el baseline TF-IDF.
+      </p>
+    </div>
+  </section>
+
+  <section id="autor">
+    <div class="container">
+      <h2>Autor</h2>
+      <div class="authors">
+        <div class="author-card">
+          <div class="name">Joaquin Cernik</div>
+          <div class="links">
+            <a href="https:/github.com/joaquincernik">GitHub</a>
+            <a href="https:/linkedin.com/in/joaquincernik">LinkedIn</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p>
+        Trabajo final — Inteligencia Artificial · Instituto Universitario Aeronáutico · 2026<br>
+        <a href="https:/github.com/joaquincernik/inteligencia-artificial-final">Código fuente en GitHub</a>
+        · <a href="https:/github.com/joaquincernik/inteligencia-artificial-final/blob/main/LICENSE">Licencia MIT</a>
+      </p>
+    </div>
+  </footer>
+
+</body>
+</html>

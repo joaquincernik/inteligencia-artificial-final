@@ -1,6 +1,6 @@
 # Deploy Wazuh Docker in single node configuration
 
-This deployment is defined in the `docker-compose.yml` file with one Wazuh manager container, one Wazuh indexer container, and one Wazuh dashboard container. It can be deployed by following these steps:
+This deployment is defined in the `docker compose.yml` file with one Wazuh manager container, one Wazuh indexer container, and one Wazuh dashboard container. It can be deployed by following these steps:
 
 1) Increase max_map_count on your host (Linux). This command must be run with root permissions:
 ```
