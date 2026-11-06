@@ -33,14 +33,15 @@ DOMAINS = {
         "Infraestructura y Redes: topología de red, firewalls, enrutamiento, "
         "infraestructura cloud, segmentación, VPN y DMZ."
     ),
-    "web_apis": (
-        "Aplicaciones Web y APIs: OWASP Top 10, vulnerabilidades de APIs, "
-        "mecanismos de autenticación y sesión, hardening de backend."
-    ),
-    "mobile": (
-        "Seguridad Mobile: Android/iOS, análisis de APK/IPA, almacenamiento "
-        "local inseguro, comunicación insegura y permisos."
-    ),
+    # Verticales sin tools por ahora: se dejan comentadas para una iteración futura.
+    # "web_apis": (
+    #     "Aplicaciones Web y APIs: OWASP Top 10, vulnerabilidades de APIs, "
+    #     "mecanismos de autenticación y sesión, hardening de backend."
+    # ),
+    # "mobile": (
+    #     "Seguridad Mobile: Android/iOS, análisis de APK/IPA, almacenamiento "
+    #     "local inseguro, comunicación insegura y permisos."
+    # ),
     "soc_logs": (
         "SOC, Logs y Eventos: análisis SIEM, anomalías de autenticación, "
         "triaje de incidentes y correlación de syslog/event logs."
@@ -49,17 +50,17 @@ DOMAINS = {
         "Threat Intelligence: correlación de IOCs, mapeo de TTPs a MITRE "
         "ATT&CK, feeds de amenazas y análisis de CVEs."
     ),
-    "ot_ics": (
-        "OT/ICS: protocolos SCADA/ICS (Modbus, DNP3, S7), modelo Purdue, "
-        "seguridad de tecnología operacional y safety."
-    ),
+    # "ot_ics": (
+    #     "OT/ICS: protocolos SCADA/ICS (Modbus, DNP3, S7), modelo Purdue, "
+    #     "seguridad de tecnología operacional y safety."
+    # ),
 }
 
 ROUTER_SYSTEM_PROMPT = (
-    "Eres el orquestador de Capazeta, un asistente de ciberseguridad con seis "
-    "especialistas. Analiza la conversación y decide qué especialista debe "
-    "responder al último mensaje del usuario. Responde ÚNICAMENTE con una de "
-    "estas claves, sin texto adicional:\n"
+    "Eres el orquestador de Capazeta, un asistente de ciberseguridad con "
+    f"{len(DOMAINS)} especialistas. Analiza la conversación y decide qué "
+    "especialista debe responder al último mensaje del usuario. Responde "
+    "ÚNICAMENTE con una de estas claves, sin texto adicional:\n"
     + "\n".join(f"- {key}: {desc}" for key, desc in DOMAINS.items())
 )
 
@@ -115,10 +116,22 @@ INFRA_INSTRUCTIONS = (
     "\n\nTenés disponible la herramienta 'run_nmap_scan' para escanear hosts o "
     "rangos de red con Nmap. Usala cuando el usuario proporcione un target "
     "concreto (IP, hostname o CIDR) y luego interpretá los resultados."
+    "\n\nEn 'arguments' usá solo estas opciones permitidas: -sT, -sV, -sn, "
+    "-Pn, -F, -n, -R, -v, -vv, --open, --reason, -6, -T2, -T3, -T4, "
+    "--version-light y --version-all. La tool rechaza cualquier otra opción "
+    "(por ejemplo --script, -sS o -O). En 'ports' usá solo números y rangos "
+    "separados por comas (ej. '22,80,443' o '1-1024')."
+    "\n\nUsá '-sn' solo para descubrir hosts (no devuelve puertos) y '-F' para "
+    "los 100 puertos más comunes; no los combines entre sí ni les pases 'ports'. "
+    "'-6' es solo para targets IPv6. Si el host no responde a ping, agregá '-Pn'."
     "\n\nSi el usuario pide guardar, exportar o generar un reporte del escaneo, "
     "llamá a run_nmap_scan con save_md=True. Cuando se guarde, respondé de forma "
     "breve indicando la ruta del archivo (ej. 'Reporte guardado en reports/...md'), "
     "sin volcar toda la tabla en la respuesta."
+    "\n\nSi pide el reporte en PDF (o 'exportá el escaneo en PDF'), llamá a "
+    "run_nmap_scan con save_pdf=True y respondé brevemente con la ruta del .pdf "
+    "(ej. 'Reporte PDF guardado en reports/...pdf'). Si pide Markdown y PDF, usá "
+    "save_md=True y save_pdf=True."
 )
 
 SOC_INSTRUCTIONS = (
@@ -135,6 +148,9 @@ SOC_INSTRUCTIONS = (
     "llamá a wazuh_search_alerts, wazuh_mitre_coverage o search_mitre_attack con save_md=True. "
     "Cuando se guarde, respondé de forma breve indicando la ruta del archivo (ej. 'Reporte guardado en reports/...md'), "
     "sin volcar toda la tabla en la respuesta."
+    "\n\nSi pide el reporte en PDF, llamá a la misma tool con save_pdf=True y respondé "
+    "brevemente con la ruta del .pdf (ej. 'Reporte PDF guardado en reports/...pdf'). "
+    "Si pide Markdown y PDF, usá save_md=True y save_pdf=True."
 )
 
 THREAT_INSTRUCTIONS = (
@@ -151,6 +167,9 @@ THREAT_INSTRUCTIONS = (
     "llamá a wazuh_search_alerts, wazuh_mitre_coverage o search_mitre_attack con save_md=True. "
     "Cuando se guarde, respondé de forma breve indicando la ruta del archivo (ej. 'Reporte guardado en reports/...md'), "
     "sin volcar toda la tabla en la respuesta."
+    "\n\nSi pide el reporte en PDF, llamá a la misma tool con save_pdf=True y respondé "
+    "brevemente con la ruta del .pdf (ej. 'Reporte PDF guardado en reports/...pdf'). "
+    "Si pide Markdown y PDF, usá save_md=True y save_pdf=True."
 )
 
 
@@ -158,12 +177,12 @@ def infraestructura_redes_node(state: AgentState) -> dict:
     return _tool_domain_node(state, "infraestructura_redes", infra_llm, INFRA_INSTRUCTIONS)
 
 
-def web_apis_node(state: AgentState) -> dict:
-    return _domain_node(state, "web_apis")
+# def web_apis_node(state: AgentState) -> dict:
+#     return _domain_node(state, "web_apis")
 
 
-def mobile_node(state: AgentState) -> dict:
-    return _domain_node(state, "mobile")
+# def mobile_node(state: AgentState) -> dict:
+#     return _domain_node(state, "mobile")
 
 
 def soc_logs_node(state: AgentState) -> dict:
@@ -174,5 +193,5 @@ def threat_intel_node(state: AgentState) -> dict:
     return _tool_domain_node(state, "threat_intel", threat_llm, THREAT_INSTRUCTIONS)
 
 
-def ot_ics_node(state: AgentState) -> dict:
-    return _domain_node(state, "ot_ics")
+# def ot_ics_node(state: AgentState) -> dict:
+#     return _domain_node(state, "ot_ics")

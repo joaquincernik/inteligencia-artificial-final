@@ -4,11 +4,11 @@ from langgraph.prebuilt import ToolNode, tools_condition
 from capazeta.graph.nodes import (
     router_node,
     infraestructura_redes_node,
-    web_apis_node,
-    mobile_node,
+    # web_apis_node,  # vertical sin tools, comentada
+    # mobile_node,  # vertical sin tools, comentada
     soc_logs_node,
     threat_intel_node,
-    ot_ics_node,
+    # ot_ics_node,  # vertical sin tools, comentada
 )
 from capazeta.graph.state import AgentState
 from capazeta.tools import (
@@ -22,11 +22,11 @@ from capazeta.tools import (
 
 DOMAIN_NODES = [
     "infraestructura_redes",
-    "web_apis",
-    "mobile",
+    # "web_apis",  # vertical sin tools, comentada
+    # "mobile",  # vertical sin tools, comentada
     "soc_logs",
     "threat_intel",
-    #"ot_ics",
+    # "ot_ics",  # vertical sin tools, comentada
 ]
 
 TOOL_DOMAINS = {
@@ -45,11 +45,11 @@ def build_graph():
 
     graph_builder.add_node("router", router_node)
     graph_builder.add_node("infraestructura_redes", infraestructura_redes_node)
-    graph_builder.add_node("web_apis", web_apis_node)
-    graph_builder.add_node("mobile", mobile_node)
+    # graph_builder.add_node("web_apis", web_apis_node)  # vertical sin tools
+    # graph_builder.add_node("mobile", mobile_node)  # vertical sin tools
     graph_builder.add_node("soc_logs", soc_logs_node)
     graph_builder.add_node("threat_intel", threat_intel_node)
-    #graph_builder.add_node("ot_ics", ot_ics_node)
+    # graph_builder.add_node("ot_ics", ot_ics_node)  # vertical sin tools
 
     graph_builder.add_node("infra_tools", ToolNode([run_nmap_scan]))
     graph_builder.add_node(

@@ -43,14 +43,13 @@ Capazeta se ejecuta de forma interactiva a través de una interfaz de línea de 
 
 **Capazeta** es un asistente cibernético multi-agente modular desarrollado con **LangGraph** y **LangChain**. Su propósito es ayudar a equipos de seguridad, administradores de red y analistas de SOC a realizar tareas de diagnóstico, análisis de vulnerabilidades, investigación de amenazas e interpretación de logs en tiempo real.
 
-El sistema organiza sus capacidades en 6 nodos de subagentes especializados, coordinados por un enrutador principal:
+El sistema organiza sus capacidades en 3 nodos de subagentes especializados, coordinados por un enrutador principal:
 
 1. **Infraestructura y Redes:** Análisis de topología de red, segmentación, firewalls y escaneo con Nmap.
-2. **Aplicaciones Web y APIs:** Seguridad en aplicaciones web, OWASP Top 10, autenticación y hardening de APIs.
-3. **Mobile:** Seguridad en plataformas Android/iOS, análisis de APKs/IPAs, almacenamiento local y comunicaciones.
-4. **SOC / Logs y Eventos:** Análisis de SIEM, triaje de incidentes e integración con alertas de Wazuh.
-5. **Threat Intelligence:** Mapeo de TTPs en MITRE ATT&CK mediante RAG (FAISS) e investigación de IOCs/CVEs.
-6. **OT / ICS:** Protocolos de control industrial (Modbus, DNP3, S7), modelo Purdue y seguridad operacional.
+2. **SOC / Logs y Eventos:** Análisis de SIEM, triaje de incidentes e integración con alertas de Wazuh.
+3. **Threat Intelligence:** Mapeo de TTPs en MITRE ATT&CK mediante RAG (FAISS) e investigación de IOCs/CVEs.
+
+Las verticales de **Aplicaciones Web y APIs**, **Mobile** y **OT/ICS** quedan fuera de esta iteración: están comentadas en el grafo a la espera de contar con herramientas propias.
 
 ### Contexto académico
 
@@ -105,7 +104,7 @@ Para formalizar el comportamiento del sistema, se define Capazeta bajo el marco 
 | :-- | :-- | :-- |
 | **P - *Performance Measure* (Medida de rendimiento)** | Criterios para evaluar si el agente actúa correctamente. | Enrutamiento correcto al subagente, mapeo preciso a técnicas/tácticas MITRE ATT&CK, respuestas fundamentadas en el contexto recuperado, minimización de alucinaciones y utilidad de los reportes generados. |
 | **E - *Environment* (Entorno)** | Espacio con el que interactúa el agente. | Consultas del usuario, stack de Wazuh (API/Indexer), objetivo de red para escaneo con Nmap, base de conocimiento MITRE ATT&CK, sistema de archivos local y herramientas disponibles. |
-| **A - *Actuators* (Actuadores)** | Acciones que puede ejecutar del agente. | Respuestas al usuario, llamadas a herramientas (`run_nmap_scan`, `wazuh_list_agents`, `wazuh_search_alerts`, `wazuh_mitre_coverage`, `search_mitre_attack`), razonamiento entre subagentes y generación/guardado de reportes en Markdown. |
+| **A - *Actuators* (Actuadores)** | Acciones que puede ejecutar del agente. | Respuestas al usuario, llamadas a herramientas (`run_nmap_scan`, `wazuh_list_agents`, `wazuh_search_alerts`, `wazuh_mitre_coverage`, `search_mitre_attack`), razonamiento entre subagentes y generación/guardado de reportes en Markdown y PDF. |
 | **S - *Sensors* (Sensores)** | Percepciones que recibe del agente. | Mensajes del usuario, resultados de las herramientas ejecutadas, información recuperada del índice FAISS de MITRE ATT&CK, alertas/eventos de Wazuh, resultados de escaneo Nmap y estado del grafo (`AgentState`). |
 
 ### Sistema RAG (MITRE ATT&CK)
@@ -122,8 +121,8 @@ Por defecto se usan embeddings de Gemini (`models/gemini-embedding-001`). Tambi�
 
 El sistema se encuentra en etapa de **MVP funcional**. Se ha validado cualitativamente la correcta ejecución de las siguientes funcionalidades:
 
-- **Enrutamiento multi-agente:** Clasificación correcta de las consultas hacia los 6 dominios de especialidad.
-- **Herramientas activas:** Escaneo de red con Nmap, consulta de agentes/eventos/alertas desde Wazuh API/Indexer y generación automatizada de reportes en Markdown.
+- **Enrutamiento multi-agente:** Clasificación correcta de las consultas hacia los 3 dominios de especialidad activos.
+- **Herramientas activas:** Escaneo de red con Nmap (destino, puertos y flags validados contra una lista blanca), consulta de agentes/eventos/alertas desde Wazuh API/Indexer y generación automatizada de reportes en Markdown y PDF.
 - **RAG MITRE ATT&CK:** Recuperación semántica de técnicas y tácticas desde el bundle STIX sobre un índice vectorial FAISS, con embeddings de Gemini (por defecto) o Cloudflare Workers AI.
 - **Arquitectura modular:** Grafo LangGraph con bucles de tool-calling y persistencia en memoria (`InMemorySaver`).
 
@@ -176,14 +175,14 @@ Se comparará el desempeño del sistema con un enfoque sin IA, tomando como refe
 │       │   ├── build.py
 │       │   └── mitre.py
 │       └── tools/              # Herramientas (Nmap, Wazuh, MITRE RAG, Reportes)
-│           ├── firewall_tool.py
 │           ├── mitre_tool.py
 │           ├── nmap_tool.py
+│           ├── pdf_report.py
 │           ├── report.py
 │           └── wazuh_tool.py
 ├── data/
 │   └── mitre/                  # Datos y catálogo de técnicas de MITRE ATT&CK
-├── reports/                    # Salida de reportes generados (.md)
+├── reports/                    # Salida de reportes generados (.md y .pdf)
 ├── notebooks/                  # Notebooks de exploración y pruebas
 ├── tests/                      # Suite de pruebas unitarias/integración
 └── docs/
@@ -361,6 +360,23 @@ entrada 1.200  salida 350  total 1.550  sesión 4.200
 
 Para salir: `salir`, `exit`, `quit` o `Ctrl+C` / `Ctrl+D`.
 
+### Reportes PDF
+
+Las herramientas que generan reportes aceptan `save_pdf=True` además de `save_md=True`. El PDF se renderiza desde el mismo Markdown con [ReportLab](https://www.reportlab.com/) (`src/capazeta/tools/pdf_report.py`): hoja A4, tablas con encabezado, tipografía DejaVu (acentos y símbolos) y pie de página con fecha y número de página. Si se piden ambos formatos, se generan el `.md` y el `.pdf` en la misma llamada.
+
+```text
+vos ❯ escaneá 192.168.0.0/24 y guardá el reporte en PDF
+
+La tool devuelve, entre otros campos:
+{
+  "target": "192.168.0.0/24",
+  "results": [...],
+  "pdf_file": "reports/nmap_192.168.0.0_24_20261106-120000.pdf"
+}
+```
+
+Herramientas con soporte PDF: `run_nmap_scan`, `wazuh_search_alerts`, `wazuh_mitre_coverage` y `search_mitre_attack`. Los archivos se guardan en `reports/` (ignorado por git).
+
 ---
 
 ## 🗺️ Roadmap
@@ -370,9 +386,9 @@ Para salir: `salir`, `exit`, `quit` o `Ctrl+C` / `Ctrl+D`.
 - [ ] **Evaluación de generación LLM:** Medición de *Fidelidad (Faithfulness)* y *Relevancia de la Respuesta (Answer Relevance)* utilizando [Ragas](https://docs.ragas.io/) integrado con [LangSmith](https://www.langchain.com/langsmith).
 - [ ] **Baseline comparativo:** Comparación entre el sistema Capazeta, búsqueda manual por analista SOC y búsqueda tradicional por palabras clave (keyword/BM25) sobre el catálogo MITRE ATT&CK.
 - [ ] **Contrastación con otras verticales de ciberseguridad:** Integración y mapeo a marcos complementarios como **MITRE D3FEND** (contramedidas defensivas), **ATT&CK for Cloud**, **ATT&CK for Mobile** y **ATT&CK for ICS**, permitiendo contrastar hallazgos entre diferentes dominios y enriquecer el razonamiento del agente.
-- [ ] **Exportación de reportes a PDF:** Crear una herramienta `export_report_pdf` (análoga a la existente `report.py` para Markdown) que permita generar reportes profesionales en PDF con hallazgos, técnicas MITRE, artefactos e indicadores.
+- [x] **Exportación de reportes a PDF:** Implementada con `save_pdf=True` en `run_nmap_scan`, `wazuh_search_alerts`, `wazuh_mitre_coverage` y `search_mitre_attack`. El Markdown de `report.py` se renderiza a PDF con ReportLab en `src/capazeta/tools/pdf_report.py`.
 - [ ] **Persistencia de conversaciones:** Incorporación de persistencia de hilos con base de datos (PostgreSQL / SQLite Checkpointer).
-- [ ] **Ampliación de herramientas:** Desarrollo de herramientas activas para los agentes `web_apis`, `mobile` y `ot_ics`.
+- [ ] **Ampliación de herramientas:** Reactivar las verticales `web_apis`, `mobile` y `ot_ics` (hoy comentadas en el grafo) una vez que cuenten con herramientas propias.
 - [ ] **Interfaz amigable** En lugar de seguir utilizando la terminal como interaccion migrarlo a la web o a una interfaz mas amigable para el usuario, por ejemplo con herramientas como Streamlit, Chainlit o Gradio.
 
 ---

@@ -5,6 +5,7 @@ from collections import Counter
 from langchain_core.tools import tool
 
 from capazeta.rag import get_technique, search as _mitre_search
+from capazeta.tools.pdf_report import save_general_pdf_report
 from capazeta.tools.report import (
     mitre_coverage_to_markdown,
     mitre_search_to_markdown,
@@ -15,13 +16,16 @@ from capazeta.ui import progress
 
 
 @tool
-def search_mitre_attack(query: str, k: int = 5, save_md: bool = False) -> str:
+def search_mitre_attack(
+    query: str, k: int = 5, save_md: bool = False, save_pdf: bool = False
+) -> str:
     """Busca técnicas de MITRE ATT&CK Enterprise por concepto o descripción (RAG FAISS).
 
     Args:
         query: Consulta en lenguaje natural (ej. "credential dumping", "pass the hash").
         k: Cantidad de técnicas a recuperar.
         save_md: Si es True, guarda un reporte Markdown en reports/.
+        save_pdf: Si es True, guarda un reporte PDF en reports/.
     """
     progress("Buscando en MITRE ATT&CK...")
     try:
@@ -29,9 +33,12 @@ def search_mitre_attack(query: str, k: int = 5, save_md: bool = False) -> str:
     except Exception as exc:
         return json.dumps({"error": str(exc)}, ensure_ascii=False)
     result_data = {"query": query, "results": results}
-    if save_md:
+    if save_md or save_pdf:
         md_content = mitre_search_to_markdown(result_data)
+    if save_md:
         result_data["file"] = save_general_markdown_report(md_content, "mitre_search")
+    if save_pdf:
+        result_data["pdf_file"] = save_general_pdf_report(md_content, "mitre_search")
     return json.dumps(result_data, ensure_ascii=False)
 
 
@@ -77,7 +84,11 @@ def _enrich(tech_counter: Counter, top: int) -> list[dict]:
 
 @tool
 def wazuh_mitre_coverage(
-    hours: int = 24, min_level: int = 0, top: int = 20, save_md: bool = False
+    hours: int = 24,
+    min_level: int = 0,
+    top: int = 20,
+    save_md: bool = False,
+    save_pdf: bool = False,
 ) -> str:
     """Indica qué técnicas y tácticas MITRE ATT&CK está reportando Wazuh (alertas recientes).
 
@@ -86,6 +97,7 @@ def wazuh_mitre_coverage(
         min_level: Nivel mínimo de la regla (0-15).
         top: Cantidad máxima de técnicas a devolver.
         save_md: Si es True, guarda un reporte Markdown en reports/.
+        save_pdf: Si es True, guarda un reporte PDF en reports/.
     """
     progress("Consultando cobertura MITRE...")
     tactic_counter: Counter = Counter()
@@ -119,9 +131,12 @@ def wazuh_mitre_coverage(
             "tactics": [],
             "note": "No hay alertas con mapeo MITRE en la ventana indicada.",
         }
-        if save_md:
+        if save_md or save_pdf:
             md_content = mitre_coverage_to_markdown(res_empty)
+        if save_md:
             res_empty["file"] = save_general_markdown_report(md_content, "mitre_coverage")
+        if save_pdf:
+            res_empty["pdf_file"] = save_general_pdf_report(md_content, "mitre_coverage")
         return json.dumps(res_empty, ensure_ascii=False)
 
     result_data = {
@@ -131,18 +146,10 @@ def wazuh_mitre_coverage(
         "techniques": _enrich(tech_counter, top),
         "tactics": [{"tactic": t, "count": c} for t, c in tactic_counter.most_common(top)],
     }
-    if save_md:
+    if save_md or save_pdf:
         md_content = mitre_coverage_to_markdown(result_data)
+    if save_md:
         result_data["file"] = save_general_markdown_report(md_content, "mitre_coverage")
+    if save_pdf:
+        result_data["pdf_file"] = save_general_pdf_report(md_content, "mitre_coverage")
     return json.dumps(result_data, ensure_ascii=False)
-
-    return json.dumps(
-        {
-            "window_hours": hours,
-            "min_level": min_level,
-            "total_techniques": len(tech_counter),
-            "techniques": _enrich(tech_counter, top),
-            "tactics": [{"tactic": t, "count": c} for t, c in tactic_counter.most_common(top)],
-        },
-        ensure_ascii=False,
-    )

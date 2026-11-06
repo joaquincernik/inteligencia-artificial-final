@@ -18,6 +18,7 @@ from capazeta.config import (
     WAZUH_INDEXER_USER,
     WAZUH_VERIFY_SSL,
 )
+from capazeta.tools.pdf_report import save_general_pdf_report
 from capazeta.tools.report import (
     save_general_markdown_report,
     wazuh_alerts_to_markdown,
@@ -135,7 +136,11 @@ def wazuh_agents_summary() -> str:
 
 @tool
 def wazuh_search_alerts(
-    limit: int = 20, min_level: int = 0, hours: int = 24, save_md: bool = False
+    limit: int = 20,
+    min_level: int = 0,
+    hours: int = 24,
+    save_md: bool = False,
+    save_pdf: bool = False,
 ) -> str:
     """Busca alertas recientes de Wazuh en el Indexer (regla, severidad, agente y MITRE ATT&CK).
 
@@ -144,6 +149,7 @@ def wazuh_search_alerts(
         min_level: Nivel mínimo de la regla (0-15); usar >= 7 para amenazas relevantes.
         hours: Ventana temporal hacia atrás en horas.
         save_md: Si es True, guarda un reporte Markdown en reports/.
+        save_pdf: Si es True, guarda un reporte PDF en reports/.
     """
     progress("Consultando Wazuh...")
     body = {
@@ -198,7 +204,10 @@ def wazuh_search_alerts(
             }
         )
     result_data = {"total": total, "alerts": alerts}
-    if save_md:
+    if save_md or save_pdf:
         md_content = wazuh_alerts_to_markdown(result_data)
+    if save_md:
         result_data["file"] = save_general_markdown_report(md_content, "wazuh_alerts")
+    if save_pdf:
+        result_data["pdf_file"] = save_general_pdf_report(md_content, "wazuh_alerts")
     return json.dumps(result_data, ensure_ascii=False)

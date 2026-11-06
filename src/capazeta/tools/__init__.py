@@ -1,4 +1,9 @@
 from capazeta.tools.nmap_tool import run_nmap_scan
+from capazeta.tools.pdf_report import (
+    markdown_to_pdf,
+    save_general_pdf_report,
+    save_pdf_report,
+)
 from capazeta.tools.report import save_markdown_report, scan_to_markdown
 from capazeta.tools.wazuh_tool import (
     wazuh_agents_summary,
@@ -11,6 +16,9 @@ __all__ = [
     "run_nmap_scan",
     "scan_to_markdown",
     "save_markdown_report",
+    "markdown_to_pdf",
+    "save_general_pdf_report",
+    "save_pdf_report",
     "wazuh_list_agents",
     "wazuh_agents_summary",
     "wazuh_search_alerts",

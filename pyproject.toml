@@ -15,6 +15,7 @@ dependencies = [
     "pandas>=2.3.3",
     "python-dotenv>=1.2.4",
     "python-nmap>=0.7.1",
+    "reportlab>=5.1.0",
     "rich>=15.0.0",
     "scikit-learn>=1.7.2",
 ]
