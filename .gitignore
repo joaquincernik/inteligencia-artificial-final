@@ -41,6 +41,10 @@ reports/*.md
 reports/*.pdf
 !reports/.gitkeep
 
+# Node (solo para compilar Tailwind del sitio en docs/)
+node_modules/
+npm-debug.log*
+
 # IDEs & System
 .vscode/
 .idea/

@@ -204,11 +204,20 @@ Para automatizar estas métricas se planea usar [**Ragas**](https://docs.ragas.i
 └── docs/
     ├── index.html              # Página estática para GitHub Pages
     ├── assets/
-    │   └── style.css           # Estilos de la página
+    │   ├── input.css           # Fuente de Tailwind (tokens y componentes)
+    │   ├── tailwind.css        # CSS compilado y versionado
+    │   └── app.js              # Tema claro/oscuro, scroll-spy y animaciones
     └── img/                    # Diagrama de arquitectura y capturas
         ├── grafico.png
         ├── cli.png
         └── comparativa_embeddings.png
+```
+
+El sitio de `docs/` es estático y no necesita build para publicarse en GitHub Pages: el CSS compilado (`docs/assets/tailwind.css`) queda versionado. Si modificás el HTML, regenerá los estilos con:
+
+```bash
+npm install
+npm run build:css
 ```
 
 ---

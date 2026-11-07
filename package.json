@@ -1,0 +1,14 @@
+{
+  "name": "capazeta-docs",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Sitio estático de Capazeta (GitHub Pages). Tailwind solo se usa para compilar docs/assets/tailwind.css.",
+  "scripts": {
+    "build:css": "tailwindcss -i ./docs/assets/input.css -o ./docs/assets/tailwind.css --minify",
+    "watch:css": "tailwindcss -i ./docs/assets/input.css -o ./docs/assets/tailwind.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.0",
+    "tailwindcss": "^4.1.0"
+  }
+}

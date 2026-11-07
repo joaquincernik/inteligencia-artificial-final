@@ -1,430 +1,900 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Capazeta — Asistente multi-agente de ciberseguridad</title>
-  <meta name="description" content="Capazeta es un asistente multi-agente de ciberseguridad construido con LangGraph y LangChain que combina Nmap, Wazuh y un RAG sobre MITRE ATT&CK.">
-  <link rel="stylesheet" href="assets/style.css">
+  <meta name="description" content="Capazeta es un asistente multi-agente de ciberseguridad construido con LangGraph y LangChain que combina Nmap, Wazuh y un RAG sobre MITRE ATT&amp;CK.">
+  <meta name="theme-color" content="#0b0e12">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Capazeta — Asistente multi-agente de ciberseguridad">
+  <meta property="og:description" content="Enruta cada consulta a un especialista en redes, SOC o threat intelligence, con recuperación semántica sobre MITRE ATT&amp;CK.">
+  <meta property="og:image" content="img/grafico.png">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem("capazeta-theme");
+        var dark = stored ? stored === "dark" : !window.matchMedia("(prefers-color-scheme: light)").matches;
+        document.documentElement.classList.toggle("dark", dark);
+      } catch (e) {}
+    })();
+  </script>
+
+  <link rel="stylesheet" href="assets/tailwind.css">
+  <script src="assets/app.js" defer></script>
 </head>
-<body>
+<body class="min-h-screen">
 
-  <nav>
-    <div class="container">
-      <span class="brand">Capazeta</span>
-      <ul>
-        <li><a href="#sobre">Sobre</a></li>
-        <li><a href="#demo">Demo</a></li>
-        <li><a href="#resultados">Resultados</a></li>
-        <li><a href="#autor">Autor</a></li>
-        <li><a href="https:/github.com/joaquincernik/inteligencia-artificial-final">GitHub</a></li>
+  <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-accent focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-accent-ink">Saltar al contenido</a>
+
+  <header class="sticky top-0 z-50 border-b border-line/60 bg-bg/80 backdrop-blur-xl">
+    <nav class="container-x flex h-16 items-center justify-between gap-4" aria-label="Navegación principal">
+      <a href="#top" class="group flex items-center gap-2.5" aria-label="Capazeta — inicio">
+        <span class="grid size-9 place-items-center rounded-xl border border-accent/30 bg-accent/10 text-accent transition group-hover:border-accent/60 group-hover:bg-accent/15">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="size-5" aria-hidden="true">
+            <path d="M12 3l7 3v5c0 4.4-2.9 8.4-7 9-4.1-.6-7-4.6-7-9V6l7-3z"/>
+            <path d="M9.2 12.2l2 2 3.6-4"/>
+          </svg>
+        </span>
+        <span class="font-mono text-sm font-semibold tracking-tight text-fg">capazeta<span class="text-accent">_</span></span>
+      </a>
+
+      <ul class="hidden items-center gap-1 md:flex">
+        <li><a class="nav-link" data-nav href="#sobre">Sobre</a></li>
+        <li><a class="nav-link" data-nav href="#demo">Demo</a></li>
+        <li><a class="nav-link" data-nav href="#resultados">Resultados</a></li>
+        <li><a class="nav-link" data-nav href="#autor">Autor</a></li>
       </ul>
-    </div>
-  </nav>
 
-  <header class="hero">
-    <div class="container">
-      <h1>Capazeta</h1>
-      <p class="tagline">
-        Asistente multi-agente de ciberseguridad que enruta cada consulta a un especialista
-        en redes, SOC o threat intelligence, con recuperación semántica sobre MITRE ATT&amp;CK.
-      </p>
+      <div class="flex items-center gap-2">
+        <button id="theme-toggle" type="button" class="grid size-9 place-items-center rounded-full border border-line/80 bg-surface/60 text-muted transition hover:border-accent/50 hover:text-fg" aria-label="Activar tema claro" aria-pressed="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="size-4 dark:hidden" aria-hidden="true">
+            <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/>
+          </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="hidden size-4 dark:block" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+          </svg>
+        </button>
 
-      <div class="badges">
-        <img src="https:/img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+">
-        <img src="https:/img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License">
-        <img src="https:/img.shields.io/badge/status-MVP%20funcional-brightgreen.svg" alt="MVP funcional">
+        <a class="btn btn-primary btn-sm hidden sm:inline-flex" href="https://github.com/joaquincernik/inteligencia-artificial-final">
+          <svg viewBox="0 0 24 24" fill="currentColor" class="size-4" aria-hidden="true">
+            <path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-.88-.01-1.73-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.91-.63.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.35 1.12 2.92.86.09-.66.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.7 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 2.5-.34c.85 0 1.71.12 2.5.34 1.91-1.33 2.75-1.05 2.75-1.05.55 1.4.2 2.44.1 2.7.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.8-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.59.69.49A10.02 10.02 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/>
+          </svg>
+          GitHub
+        </a>
+
+        <details id="mobile-menu" class="relative md:hidden">
+          <summary class="grid size-9 cursor-pointer list-none place-items-center rounded-full border border-line/80 bg-surface/60 text-muted transition hover:text-fg" aria-label="Abrir menú de navegación">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" class="size-4" aria-hidden="true">
+              <path d="M4 7h16M4 12h16M4 17h16"/>
+            </svg>
+          </summary>
+          <div class="absolute right-0 top-full mt-3 w-56 overflow-hidden rounded-2xl border border-line/80 bg-surface p-2 shadow-2xl">
+            <a class="block rounded-lg px-3 py-2 text-sm text-muted transition hover:bg-surface-2 hover:text-fg" href="#sobre">Sobre</a>
+            <a class="block rounded-lg px-3 py-2 text-sm text-muted transition hover:bg-surface-2 hover:text-fg" href="#demo">Demo</a>
+            <a class="block rounded-lg px-3 py-2 text-sm text-muted transition hover:bg-surface-2 hover:text-fg" href="#resultados">Resultados</a>
+            <a class="block rounded-lg px-3 py-2 text-sm text-muted transition hover:bg-surface-2 hover:text-fg" href="#autor">Autor</a>
+            <a class="mt-1 block rounded-lg bg-accent/10 px-3 py-2 font-mono text-[13px] text-accent transition hover:bg-accent/15" href="https://github.com/joaquincernik/inteligencia-artificial-final">GitHub ↗</a>
+          </div>
+        </details>
       </div>
-
-      <div class="cta-row">
-        <a class="btn btn-primary" href="https:/github.com/joaquincernik/inteligencia-artificial-final">Ver repositorio</a>
-        <a class="btn btn-secondary" href="https:/github.com/joaquincernik/inteligencia-artificial-final#readme">Leer el README</a>
-      </div>
-    </div>
+    </nav>
   </header>
 
-  <section id="demo">
-    <div class="container">
-      <h2>Demo — Trabajo Final</h2>
-      <p class="lead">
-        Demostración del flujo completo implementado en el <strong>Notebook 05: Demo Trabajo Final</strong>,
-        cubriendo la configuración del entorno, enrutamiento automático hacia subagentes especializados,
-        ejecución segura de herramientas (<em>allowlist</em>), y consulta directa al RAG sobre MITRE ATT&amp;CK en las tres verticales operativas.
+  <main id="main">
+
+    <!-- ============ HERO ============ -->
+    <section id="top" class="relative isolate overflow-hidden">
+      <div class="absolute inset-0 -z-10 bg-grid mask-fade-top opacity-60" aria-hidden="true"></div>
+      <div class="animate-glow pointer-events-none absolute left-1/2 top-[-18rem] -z-10 size-[42rem] rounded-full bg-accent/20 blur-[130px]" aria-hidden="true"></div>
+      <div class="pointer-events-none absolute right-[-10rem] top-24 -z-10 size-[26rem] rounded-full bg-cyan/10 blur-[110px]" aria-hidden="true"></div>
+
+      <div class="container-x relative grid items-center gap-14 pb-14 pt-16 sm:pt-20 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12 lg:pb-20 lg:pt-24">
+        <div data-reveal>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="chip chip-accent">
+              <span class="animate-pulse-soft size-1.5 rounded-full bg-accent"></span>
+              MVP funcional
+            </span>
+            <span class="chip">Trabajo final · 2026</span>
+          </div>
+
+          <h1 class="mt-6 text-[clamp(3.6rem,9vw,6.5rem)] font-extrabold leading-[0.92] tracking-[-0.045em]">
+            <span class="bg-gradient-to-br from-fg via-fg to-accent bg-clip-text text-transparent">Capazeta</span>
+          </h1>
+          <p class="mt-4 font-mono text-[11px] uppercase tracking-[0.28em] text-faint sm:text-xs">asistente multi-agente de ciberseguridad</p>
+
+          <p class="mt-6 max-w-xl text-pretty text-[17px] leading-relaxed text-muted">
+            Enruta cada consulta a un especialista en redes, SOC o threat intelligence,
+            con recuperación semántica sobre MITRE ATT&amp;CK.
+          </p>
+
+          <div class="mt-8 flex flex-wrap items-center gap-3">
+            <a class="btn btn-primary" href="https://github.com/joaquincernik/inteligencia-artificial-final">
+              Ver repositorio
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="size-4" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6"/>
+              </svg>
+            </a>
+            <a class="btn btn-ghost" href="https://github.com/joaquincernik/inteligencia-artificial-final#readme">Leer el README</a>
+          </div>
+
+          <div class="mt-9 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-faint">
+            <span><span class="font-mono font-medium text-fg">3</span> subagentes activos</span>
+            <span class="hidden h-3.5 w-px bg-line sm:block" aria-hidden="true"></span>
+            <span><span class="font-mono font-medium text-fg">31</span> alertas evaluadas</span>
+            <span class="hidden h-3.5 w-px bg-line sm:block" aria-hidden="true"></span>
+            <span><span class="font-mono font-medium text-fg">67.74 %</span> Hit@5</span>
+          </div>
+
+          <p class="mt-5 font-mono text-[11px] text-faint">Python 3.10+ · MIT · LangGraph + LangChain</p>
+        </div>
+
+        <div class="relative" data-reveal>
+          <div class="pointer-events-none absolute -inset-5 rounded-[2rem] bg-gradient-to-tr from-accent/20 via-transparent to-cyan/20 blur-2xl" aria-hidden="true"></div>
+          <figure class="relative">
+            <div class="shot">
+              <div class="shot-bar">
+                <span class="shot-dot"></span>
+                <span class="shot-dot"></span>
+                <span class="shot-dot"></span>
+                <span class="shot-label ml-2">capazeta · cli</span>
+                <span class="ml-auto flex items-center gap-1.5 font-mono text-[10px] text-accent">
+                  <span class="size-1.5 rounded-full bg-accent"></span>online
+                </span>
+              </div>
+              <img src="img/cli.png" alt="Interfaz de línea de comandos de Capazeta construida con Rich" width="1313" height="651" fetchpriority="high">
+            </div>
+            <figcaption class="mt-3 flex items-center justify-between font-mono text-[11px] text-faint">
+              <span>uv run capazeta</span>
+              <span>Rich · tool calling</span>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <div class="container-x relative pb-16 lg:pb-24">
+        <div class="card flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:gap-5 sm:p-5" data-reveal>
+          <div class="flex items-center justify-between gap-3 sm:block sm:min-w-32 sm:text-center">
+            <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-accent">router</p>
+            <p class="mt-1 text-sm font-semibold text-fg">Clasifica la intención</p>
+          </div>
+          <div class="hidden h-px flex-1 bg-gradient-to-r from-accent/60 to-line sm:block" aria-hidden="true"></div>
+          <div class="grid flex-1 grid-cols-1 gap-2 sm:grid-cols-3">
+            <div class="rounded-xl border border-line/60 bg-surface-2/50 px-3 py-2.5">
+              <p class="font-mono text-[10px] uppercase tracking-[0.14em] text-cyan">redes</p>
+              <p class="mt-0.5 text-[13px] text-muted">Nmap · exposición</p>
+            </div>
+            <div class="rounded-xl border border-line/60 bg-surface-2/50 px-3 py-2.5">
+              <p class="font-mono text-[10px] uppercase tracking-[0.14em] text-cyan">soc_logs</p>
+              <p class="mt-0.5 text-[13px] text-muted">Wazuh · alertas</p>
+            </div>
+            <div class="rounded-xl border border-line/60 bg-surface-2/50 px-3 py-2.5">
+              <p class="font-mono text-[10px] uppercase tracking-[0.14em] text-cyan">threat_intel</p>
+              <p class="mt-0.5 text-[13px] text-muted">MITRE ATT&amp;CK</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ DEMO ============ -->
+    <section id="demo" class="scroll-mt-24 border-t border-line/60 py-20 sm:py-24">
+      <div class="container-x">
+        <div data-reveal>
+          <p class="section-kicker">Demo</p>
+          <h2 class="section-title">El flujo completo, paso a paso</h2>
+          <p class="lead">
+            Demostración del flujo completo implementado en el <strong>Notebook 05: Demo Trabajo Final</strong>,
+            cubriendo la configuración del entorno, enrutamiento automático hacia subagentes especializados,
+            ejecución segura de herramientas (<em>allowlist</em>), y consulta directa al RAG sobre MITRE ATT&amp;CK en las tres verticales operativas.
+          </p>
+        </div>
+
+        <ol class="relative mt-14 space-y-14 before:absolute before:bottom-4 before:left-4 before:top-4 before:w-px before:bg-line/70 sm:before:left-5">
+
+          <!-- 00 -->
+          <li class="relative pl-12 sm:pl-16" data-reveal>
+            <span class="absolute left-0 top-0 grid size-8 place-items-center rounded-full border border-accent/40 bg-bg font-mono text-[11px] font-semibold text-accent sm:size-10 sm:text-xs">00</span>
+
+            <h3 class="text-balance text-xl font-semibold tracking-tight text-fg sm:text-2xl">Configuración del entorno y verificación de agentes</h3>
+            <p class="mt-3 max-w-3xl text-sm leading-relaxed text-muted sm:text-[15px]">
+              Iniciamos el asistente con <code>uv run capazeta</code>, verificamos la conectividad con el SIEM (Wazuh) y confirmamos los agentes activos en el sistema:
+            </p>
+
+            <div class="mt-6 grid gap-5 sm:grid-cols-2">
+              <figure class="sm:col-span-2">
+                <div class="shot">
+                  <div class="shot-bar">
+                    <span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span>
+                    <span class="shot-label ml-2">capazeta · inicio</span>
+                  </div>
+                  <img src="img/image.png" alt="Inicio del agente Capazeta en consola CLI" loading="lazy">
+                </div>
+                <figcaption class="mt-2.5 text-center text-xs text-faint">Inicio del CLI interactivo de Capazeta con interfaz Rich.</figcaption>
+              </figure>
+
+              <figure>
+                <div class="shot">
+                  <div class="shot-bar">
+                    <span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span>
+                    <span class="shot-label ml-2">wazuh · dashboard</span>
+                  </div>
+                  <img src="img/01_demo_MVP/image.png" alt="Panel de control Wazuh SOC activo" loading="lazy">
+                </div>
+                <figcaption class="mt-2.5 text-center text-xs text-faint">Servicios del SOC (Wazuh Manager/Indexer) levantados y operativos.</figcaption>
+              </figure>
+
+              <figure>
+                <div class="shot">
+                  <div class="shot-bar">
+                    <span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span>
+                    <span class="shot-label ml-2">wazuh · agentes</span>
+                  </div>
+                  <img src="img/01_demo_MVP/image copy.png" alt="Agente Linux reportando al SIEM" loading="lazy">
+                </div>
+                <figcaption class="mt-2.5 text-center text-xs text-faint">Agente de monitoreo Linux reportando telemetría en tiempo real.</figcaption>
+              </figure>
+
+              <figure class="sm:col-span-2">
+                <div class="shot">
+                  <div class="shot-bar">
+                    <span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span>
+                    <span class="shot-label ml-2">capazeta · consulta</span>
+                  </div>
+                  <img src="img/image copy.png" alt="Consulta CLI sobre agentes activos en Wazuh" loading="lazy">
+                </div>
+                <figcaption class="mt-2.5 text-center text-xs text-faint">Verificación en CLI: <code>Prompt&gt; ¿qué agentes hay reportando a wazuh en este momento?</code></figcaption>
+              </figure>
+            </div>
+          </li>
+
+          <!-- 01 -->
+          <li class="relative pl-12 sm:pl-16" data-reveal>
+            <span class="absolute left-0 top-0 grid size-8 place-items-center rounded-full border border-accent/40 bg-bg font-mono text-[11px] font-semibold text-accent sm:size-10 sm:text-xs">01</span>
+
+            <h3 class="text-balance text-xl font-semibold tracking-tight text-fg sm:text-2xl">Enrutamiento automático hacia el dominio correspondiente</h3>
+            <p class="mt-3 max-w-3xl text-sm leading-relaxed text-muted sm:text-[15px]">
+              El nodo central <strong>router</strong> analiza la intención de la consulta en lenguaje natural y la canaliza dinámicamente hacia el subagente especialista sin invocar herramientas innecesarias.
+            </p>
+
+            <figure class="mt-6">
+              <div class="shot">
+                <div class="shot-bar">
+                  <span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span>
+                  <span class="shot-label ml-2">langgraph · arquitectura</span>
+                </div>
+                <img src="img/grafico.png" alt="Arquitectura del Grafo LangGraph de Capazeta" loading="lazy" width="652" height="450" class="mx-auto max-w-3xl bg-white/95 p-3">
+              </div>
+              <figcaption class="mt-2.5 text-center text-xs text-faint">Grafo LangGraph: Router central, subagentes por dominio y nodos de herramientas.</figcaption>
+            </figure>
+
+            <div class="mt-8 space-y-5">
+              <div class="card p-5 sm:p-6">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="chip">A</span>
+                  <span class="chip chip-accent">infraestructura_redes</span>
+                </div>
+                <blockquote class="prompt mt-4">
+                  <p><strong>Prompt:</strong> "¿Cuáles son las mejores prácticas teóricas para segmentar una red corporativa utilizando VLANs sin realizar escaneos activos?"</p>
+                </blockquote>
+                <figure class="mt-4">
+                  <div class="shot">
+                    <div class="shot-bar">
+                      <span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span>
+                      <span class="shot-label ml-2">respuesta · infraestructura_redes</span>
+                    </div>
+                    <img src="img/image copy 2.png" alt="Respuesta del subagente infraestructura_redes" loading="lazy">
+                  </div>
+                </figure>
+              </div>
+
+              <div class="card p-5 sm:p-6">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="chip">B</span>
+                  <span class="chip chip-accent">threat_intel</span>
+                </div>
+                <blockquote class="prompt mt-4">
+                  <p><strong>Prompt:</strong> "¿Cuáles son las mejores prácticas teóricas para segmentar una red corporativa utilizando VLANs sin realizar escaneos activos?. Sé muy breve"</p>
+                </blockquote>
+                <figure class="mt-4">
+                  <div class="shot">
+                    <div class="shot-bar">
+                      <span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span>
+                      <span class="shot-label ml-2">respuesta · threat_intel</span>
+                    </div>
+                    <img src="img/image copy 3.png" alt="Respuesta del subagente threat_intel" loading="lazy">
+                  </div>
+                </figure>
+              </div>
+
+              <div class="card p-5 sm:p-6">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="chip">C</span>
+                  <span class="chip chip-accent">soc_logs</span>
+                </div>
+                <blockquote class="prompt mt-4">
+                  <p><strong>Prompt:</strong> "¿Qué diferencias operativas existen entre centralizar logs mediante Syslog rsyslog vs un agente liviano como Wazuh Agent?"</p>
+                </blockquote>
+                <figure class="mt-4">
+                  <div class="shot">
+                    <div class="shot-bar">
+                      <span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span>
+                      <span class="shot-label ml-2">respuesta · soc_logs</span>
+                    </div>
+                    <img src="img/image copy 4.png" alt="Respuesta del subagente soc_logs" loading="lazy">
+                  </div>
+                </figure>
+              </div>
+            </div>
+          </li>
+
+          <!-- 02 -->
+          <li class="relative pl-12 sm:pl-16" data-reveal>
+            <span class="absolute left-0 top-0 grid size-8 place-items-center rounded-full border border-accent/40 bg-bg font-mono text-[11px] font-semibold text-accent sm:size-10 sm:text-xs">02</span>
+
+            <h3 class="text-balance text-xl font-semibold tracking-tight text-fg sm:text-2xl">Tools hardening y generación de reportes</h3>
+            <p class="mt-3 max-w-3xl text-sm leading-relaxed text-muted sm:text-[15px]">
+              Demostración de ejecución de escaneo de red utilizando <code>infra_tools</code> bajo la lista blanca de argumentos (<em>allowlist</em>) de Nmap para prevenir inyecciones de código o parámetros no autorizados por parte del LLM.
+            </p>
+
+            <blockquote class="prompt mt-6">
+              <p><strong>Prompt:</strong> "Realiza un escaneo de red rápido con nmap sobre 192.168.0.0/24 para identificar hosts activos y puertos abiertos principales. Guarda el resultado en un reporte en formato Markdown y en pdf dentro de la carpeta reports."</p>
+            </blockquote>
+
+            <figure class="mt-6">
+              <div class="shot">
+                <div class="shot-bar">
+                  <span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span>
+                  <span class="shot-label ml-2">capazeta · nmap</span>
+                </div>
+                <img src="img/image copy 6.png" alt="Ejecución segura de Nmap en consola" loading="lazy">
+              </div>
+              <figcaption class="mt-2.5 text-center text-xs text-faint">Escaneo Nmap ejecutado de forma segura aplicando la allowlist de parámetros.</figcaption>
+            </figure>
+
+            <p class="mt-8 text-sm font-medium text-fg">Reportes consolidados generados en disco en formatos Markdown y PDF:</p>
+            <div class="mt-4 grid gap-5 sm:grid-cols-2">
+              <figure>
+                <div class="shot">
+                  <div class="shot-bar">
+                    <span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span>
+                    <span class="shot-label ml-2">reporte · markdown</span>
+                  </div>
+                  <img src="img/image copy 7.png" alt="Reporte en formato Markdown generado en disco" loading="lazy">
+                </div>
+              </figure>
+              <figure>
+                <div class="shot">
+                  <div class="shot-bar">
+                    <span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span>
+                    <span class="shot-label ml-2">reporte · pdf</span>
+                  </div>
+                  <img src="img/image copy 8.png" alt="Reporte en formato PDF generado con ReportLab" loading="lazy">
+                </div>
+              </figure>
+            </div>
+          </li>
+
+          <!-- 03 -->
+          <li class="relative pl-12 sm:pl-16" data-reveal>
+            <span class="absolute left-0 top-0 grid size-8 place-items-center rounded-full border border-accent/40 bg-bg font-mono text-[11px] font-semibold text-accent sm:size-10 sm:text-xs">03</span>
+
+            <h3 class="text-balance text-xl font-semibold tracking-tight text-fg sm:text-2xl">Consulta directa al RAG de MITRE ATT&amp;CK (FAISS)</h3>
+            <p class="mt-3 max-w-3xl text-sm leading-relaxed text-muted sm:text-[15px]">
+              Tres verticales operativas, tres recorridos completos: enrutamiento, ejecución de herramientas, recuperación semántica y generación de artefactos.
+            </p>
+
+            <div class="mt-8 space-y-6">
+
+              <!-- Vertical 1 -->
+              <article class="card overflow-hidden">
+                <header class="border-b border-line/60 p-5 sm:p-6">
+                  <div class="flex flex-wrap items-center gap-3">
+                    <span class="grid size-9 shrink-0 place-items-center rounded-xl border border-accent/25 bg-accent/10 font-mono text-xs font-semibold text-accent">V1</span>
+                    <div>
+                      <p class="font-mono text-[10px] uppercase tracking-[0.18em] text-faint">Vertical 1</p>
+                      <h4 class="text-lg font-semibold tracking-tight text-fg">Infraestructura de redes</h4>
+                    </div>
+                    <code class="ml-auto hidden sm:inline">infraestructura_redes</code>
+                  </div>
+                  <p class="mt-4 text-sm leading-relaxed text-muted"><strong>Caso de uso:</strong> Evaluación de exposición de servicios y correlación de mitigaciones según la matriz MITRE ATT&amp;CK.</p>
+                </header>
+
+                <div class="space-y-5 p-5 sm:p-6">
+                  <blockquote class="prompt">
+                    <p><strong>Prompt:</strong> "Dirígete al agente infraestructura_redes. Ejecuta un escaneo sobre el host objetivo 192.168.0.26 utilizando infra_tools. Una vez identificados los puertos y servicios expuestos, consulta en el RAG la técnica MITRE relacionada con el descubrimiento de servicios de red (Network Service Discovery)."</p>
+                  </blockquote>
+
+                  <figure>
+                    <div class="shot">
+                      <div class="shot-bar">
+                        <span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span>
+                        <span class="shot-label ml-2">rag · infraestructura_redes</span>
+                      </div>
+                      <img src="img/image copy 9.png" alt="Ejecución RAG en Infraestructura de redes" loading="lazy">
+                    </div>
+                  </figure>
+
+                  <details class="analysis group" open>
+                    <summary>
+                      <span class="flex items-center gap-2.5">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="size-4 text-accent" aria-hidden="true">
+                          <path d="M4 5h16M4 12h10M4 19h7"/>
+                        </svg>
+                        Análisis, resultado y validación
+                      </span>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="size-4 shrink-0 text-faint transition group-open:rotate-180" aria-hidden="true">
+                        <path d="M6 9l6 6 6-6"/>
+                      </svg>
+                    </summary>
+                    <div class="prose-capazeta space-y-6 p-5 sm:p-6">
+                      <section>
+                        <h5>1. Análisis de la ejecución (Lo que hizo el agente)</h5>
+                        <ul>
+                          <li><strong>Enrutamiento:</strong> El nodo <code>router</code> interceptó la solicitud y la derivó directamente al agente especialista <code>infraestructura_redes</code>.</li>
+                          <li><strong>Uso de Tools:</strong> El agente ejecutó la herramienta <code>infra_tools</code> invocando <code>nmap</code> de forma segura (aplicando la <em>allowlist</em> de parámetros) sobre la IP <code>192.168.0.26</code> para auditar los puertos activos.</li>
+                          <li><strong>Consulta RAG:</strong> Con los puertos identificados, realizó la búsqueda vectorial en el índice FAISS consultando por el concepto <em>"Network Service Discovery"</em>.</li>
+                          <li><strong>Síntesis:</strong> Correlacionó los hallazgos técnicos del escaneo activo con la ficha oficial de MITRE ATT&amp;CK y entregó la descripción contextualizada del riesgo.</li>
+                        </ul>
+                      </section>
+
+                      <section>
+                        <h5>2. Resultado Esperado</h5>
+                        <p>Se esperaba que el agente aislara el flujo en la vertical de red, ejecutara un escaneo válido sobre el host objetivo, identificara la técnica exacta de MITRE asociada al escaneo de servicios (<code>T1046</code>) y presentara una propuesta de mitigación orientada a infraestructura.</p>
+                      </section>
+
+                      <section>
+                        <h5>3. Por qué funcionó correctamente</h5>
+                        <ul>
+                          <li><strong>Validación de Parámetros:</strong> La lista blanca de argumentos de <code>nmap</code> evitó que el LLM introdujera <em>flags</em> no permitidos o peligrosos durante el escaneo.</li>
+                          <li><strong>Recuperación Semántica Fiel:</strong> El modelo de <em>embeddings</em> asoció la descripción de los servicios abiertos con la entrada vectorial de <code>T1046</code> (Network Service Discovery), superando la limitación de coincidencias textuales rígidas.</li>
+                        </ul>
+                      </section>
+                    </div>
+                  </details>
+                </div>
+              </article>
+
+              <!-- Vertical 2 -->
+              <article class="card overflow-hidden">
+                <header class="border-b border-line/60 p-5 sm:p-6">
+                  <div class="flex flex-wrap items-center gap-3">
+                    <span class="grid size-9 shrink-0 place-items-center rounded-xl border border-cyan/25 bg-cyan/10 font-mono text-xs font-semibold text-cyan">V2</span>
+                    <div>
+                      <p class="font-mono text-[10px] uppercase tracking-[0.18em] text-faint">Vertical 2</p>
+                      <h4 class="text-lg font-semibold tracking-tight text-fg">Threat Intelligence</h4>
+                    </div>
+                    <code class="ml-auto hidden sm:inline">threat_intel</code>
+                  </div>
+                  <p class="mt-4 text-sm leading-relaxed text-muted"><strong>Caso de uso:</strong> Caracterización de persistencia y evasión ante la detección de scripts o unidades de servicio sospechosas.</p>
+                </header>
+
+                <div class="space-y-5 p-5 sm:p-6">
+                  <blockquote class="prompt">
+                    <p><strong>Prompt:</strong> "Dirígete al agente threat_intel. Analiza el evento donde se detectó la creación de un nuevo servicio en /etc/systemd/system/ seguido de la eliminación de archivos temporales en /tmp/. Utiliza el RAG sobre la base de datos de MITRE ATT&amp;CK para identificar las técnicas y subtécnicas correspondientes a la creación de servicios en Linux y la eliminación de evidencia. Genera un informe de Threat Intelligence en Markdown que detalle el comportamiento del atacante y sugiera reglas de detección para implementar en Wazuh."</p>
+                  </blockquote>
+
+                  <figure>
+                    <div class="shot">
+                      <div class="shot-bar">
+                        <span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span>
+                        <span class="shot-label ml-2">rag · threat_intel</span>
+                      </div>
+                      <img src="img/image copy 10.png" alt="Ejecución RAG en Threat Intelligence" loading="lazy">
+                    </div>
+                  </figure>
+
+                  <details class="analysis group">
+                    <summary>
+                      <span class="flex items-center gap-2.5">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="size-4 text-accent" aria-hidden="true">
+                          <path d="M4 5h16M4 12h10M4 19h7"/>
+                        </svg>
+                        Análisis, resultado y validación
+                      </span>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="size-4 shrink-0 text-faint transition group-open:rotate-180" aria-hidden="true">
+                        <path d="M6 9l6 6 6-6"/>
+                      </svg>
+                    </summary>
+                    <div class="prose-capazeta space-y-6 p-5 sm:p-6">
+                      <section>
+                        <h5>1. Análisis de la ejecución (Lo que hizo el agente)</h5>
+                        <ul>
+                          <li><strong>Enrutamiento:</strong> El <code>router</code> delegó la orden al subgrafo especialista <code>threat_intel</code>.</li>
+                          <li><strong>Descomposición Semántica:</strong> El agente identificó dos vectores tácticos en la narrativa del prompt y realizó dos búsquedas vectoriales simultáneas en FAISS:
+                            <ul>
+                              <li>Creación de persistencia mediante archivos de servicio &rarr; <code>T1543.002</code> (Systemd Service).</li>
+                              <li>Borrado de artefactos en <code>/tmp/</code> &rarr; <code>T1070.004</code> (File Deletion).</li>
+                            </ul>
+                          </li>
+                          <li><strong>Generación de Artefactos:</strong> Construyó un informe en Markdown donde analizó la intención del atacante y propuso reglas XML específicas para cargar en el SIEM Wazuh.</li>
+                        </ul>
+                      </section>
+
+                      <section>
+                        <h5>2. Resultado Esperado</h5>
+                        <p>Se esperaba que el agente mapeara correctamente ambas acciones del atacante a sus respectivas técnicas y subtécnicas de Linux dentro del marco MITRE ATT&amp;CK, redactando un reporte formal de inteligencia con reglas de detección accionables sin requerir escaneos de red.</p>
+                      </section>
+
+                      <section>
+                        <h5>3. Por qué funcionó correctamente</h5>
+                        <ul>
+                          <li><strong>Mapeo Multidimensional RAG:</strong> La base vectorial capturó la equivalencia entre rutas del sistema operativo (<code>/etc/systemd/system/</code>) y su abstracción dentro del framework (<code>T1543.002</code>), así como la acción sobre <code>/tmp/</code> con la evasión de defensas (<code>T1070.004</code>).</li>
+                          <li><strong>Especialización del Dominio:</strong> Al no requerir ejecución de herramientas de red, el subgrafo procesó la consulta íntegramente combinando inferencia del LLM y contexto recuperado del RAG.</li>
+                        </ul>
+                      </section>
+                    </div>
+                  </details>
+                </div>
+              </article>
+
+              <!-- Vertical 3 -->
+              <article class="card overflow-hidden">
+                <header class="border-b border-line/60 p-5 sm:p-6">
+                  <div class="flex flex-wrap items-center gap-3">
+                    <span class="grid size-9 shrink-0 place-items-center rounded-xl border border-warn/25 bg-warn/10 font-mono text-xs font-semibold text-warn">V3</span>
+                    <div>
+                      <p class="font-mono text-[10px] uppercase tracking-[0.18em] text-faint">Vertical 3</p>
+                      <h4 class="text-lg font-semibold tracking-tight text-fg">SOC Logs</h4>
+                    </div>
+                    <code class="ml-auto hidden sm:inline">soc_logs</code>
+                  </div>
+                  <p class="mt-4 text-sm leading-relaxed text-muted"><strong>Caso de uso:</strong> Enriquecimiento de alertas de Wazuh en tiempo real e identificación de patrones de escalada de privilegios.</p>
+                </header>
+
+                <div class="space-y-5 p-5 sm:p-6">
+                  <blockquote class="prompt">
+                    <p><strong>Prompt:</strong> "Dirígete al agente soc_logs. Examina los registros de alertas recientes cargados por Wazuh en relación con el agente Linux ubuntuLocal. Se observan múltiples fallos de autenticación en auth.log seguidos por una modificación en /etc/sudoers. Utiliza el RAG para mapear este patrón de ataque a las técnicas de Fuerza Bruta y Escalada de Privilegios de MITRE ATT&amp;CK. Luego, consulta las herramientas del SOC para extraer los logs detallados y construye la línea de tiempo del incidente en un reporte pdf"</p>
+                  </blockquote>
+
+                  <figure>
+                    <div class="shot">
+                      <div class="shot-bar">
+                        <span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span>
+                        <span class="shot-label ml-2">rag · soc_logs</span>
+                      </div>
+                      <img src="img/image copy 12.png" alt="Ejecución RAG en SOC Logs - Consola CLI" loading="lazy">
+                    </div>
+                  </figure>
+
+                  <figure>
+                    <div class="shot">
+                      <div class="shot-bar">
+                        <span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span>
+                        <span class="shot-label ml-2">reporte · pdf</span>
+                      </div>
+                      <img src="img/image copy 13.png" alt="Ejecución RAG en SOC Logs - Generación de reporte PDF" loading="lazy">
+                    </div>
+                  </figure>
+
+                  <details class="analysis group">
+                    <summary>
+                      <span class="flex items-center gap-2.5">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="size-4 text-accent" aria-hidden="true">
+                          <path d="M4 5h16M4 12h10M4 19h7"/>
+                        </svg>
+                        Análisis, resultado y validación
+                      </span>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="size-4 shrink-0 text-faint transition group-open:rotate-180" aria-hidden="true">
+                        <path d="M6 9l6 6 6-6"/>
+                      </svg>
+                    </summary>
+                    <div class="prose-capazeta space-y-6 p-5 sm:p-6">
+                      <section>
+                        <h5>1. Análisis de la ejecución (Lo que hizo el agente)</h5>
+                        <ul>
+                          <li><strong>Enrutamiento Dinámico:</strong> El nodo <code>router</code> identificó la intención de análisis de eventos del SIEM y canalizó el flujo hacia el agente especializado <code>soc_logs</code>.</li>
+                          <li><strong>Invocación Interactiva de Tools y RAG:</strong> Tal como refleja la traza de la consola, el agente ejecutó una secuencia coordinada de acciones:
+                            <ul>
+                              <li><code>Consultando Wazuh...</code>: Invocó <code>soc_tools</code> para realizar consultas activas al Indexer/API de Wazuh sobre el agente <code>ubuntuLocal</code> (ID: 001).</li>
+                              <li><code>Buscando en MITRE ATT&amp;CK...</code>: Ejecutó una búsqueda semántica en la base vectorial FAISS para mapear el comportamiento detectado.</li>
+                              <li><code>Consultando Wazuh...</code>: Reconsultó la telemetría histórica de <code>auditd</code> para extraer los eventos exactos de comandos ejecutados (<code>/usr/bin/docker</code>, <code>/usr/bin/git</code>, <code>/usr/bin/uname</code>, etc.).</li>
+                              <li><strong>Mapeo Táctico Identificado:</strong>
+                                <ul>
+                                  <li>Acceso a Credenciales / Fuerza Bruta: Mapeado a <code>T1110</code> (Brute Force).</li>
+                                  <li>Escalada de Privilegios: Mapeado a <code>T1548.003</code> (Sudo and Sudo Caching) y <code>T1068</code> (Exploitation for Privilege Escalation), asociándolo a la modificación anómala de <code>/etc/sudoers</code>.</li>
+                                </ul>
+                              </li>
+                            </ul>
+                          </li>
+                          <li><strong>Exportación de Artefactos:</strong> Generó y guardó exitosamente el informe de auditoría consolidado en el sistema de archivos: <code>reports/wazuh_alerts_20261106-114422.pdf</code>, incluyendo la tabla detallada con alertas procesadas, IDs de regla (ej. 80792) y comandos auditados.</li>
+                        </ul>
+                      </section>
+
+                      <section>
+                        <h5>2. Resultado Esperado</h5>
+                        <p>Se esperaba que el agente especialista en logs integrara la lectura activa del SIEM (Wazuh) con el marco conceptual del RAG (MITRE ATT&amp;CK) para caracterizar un vector de ataque compuesto (acceso inicial por fuerza bruta seguido de una elevación de privilegios en Linux), finalizando con la exportación persistente de un reporte PDF listo para entrega ejecutiva o de auditoría.</p>
+                      </section>
+
+                      <section>
+                        <h5>3. Por qué funcionó correctamente</h5>
+                        <ul>
+                          <li><strong>Orquestación Multi-paso (Grafo + Tools):</strong> El agente no intentó adivinar la información; alternó de forma autónoma entre consultar el motor vectorial FAISS y realizar llamadas de API a las herramientas del SOC (<code>soc_tools</code>).</li>
+                          <li><strong>Precisión Semántica del RAG:</strong> El modelo de <em>embeddings</em> asoció la narrativa de la alerta (modificación de <code>/etc/sudoers</code>) con la técnica específica <code>T1548.003</code>, algo que una regla rígida de búsqueda léxica sin IA habría pasado por alto o catalogado de manera incompleta.</li>
+                          <li><strong>Cierre de Ciclo Operativo:</strong> El agente completó el flujo integral desde la entrada en lenguaje natural hasta la persistencia física de un documento PDF con formato institucional en disco.</li>
+                        </ul>
+                      </section>
+                    </div>
+                  </details>
+                </div>
+              </article>
+
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============ SOBRE ============ -->
+    <section id="sobre" class="scroll-mt-24 border-t border-line/60 py-20 sm:py-24">
+      <div class="container-x">
+        <div data-reveal>
+          <p class="section-kicker">Sobre el proyecto</p>
+          <h2 class="section-title">Un primer triaje automatizado para el SOC</h2>
+          <p class="lead">
+            Los equipos de seguridad dedican buena parte de su tiempo a tareas repetitivas:
+            interpretar alertas de un SIEM, mapearlas a técnicas de ataque conocidas y decidir
+            qué revisar primero. Capazeta automatiza ese primer triaje combinando herramientas
+            reales con un modelo de lenguaje y una base de conocimiento estructurada.
+          </p>
+          <p class="lead">
+            El sistema está construido sobre <strong>LangGraph</strong> y <strong>LangChain</strong>.
+            Un router central analiza cada consulta y la deriva a uno de los tres subagentes
+            activos. Cada subagente puede ejecutar herramientas en un bucle de <em>tool calling</em>
+            y devolver una respuesta fundamentada en los resultados obtenidos.
+          </p>
+        </div>
+
+        <div class="mt-10 grid gap-4 sm:grid-cols-3" data-reveal>
+          <div class="card group p-5 transition duration-300 hover:border-accent/40 hover:bg-surface-2/60">
+            <span class="grid size-10 place-items-center rounded-xl border border-line/70 bg-surface-2/60 text-accent transition group-hover:border-accent/40">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="size-5" aria-hidden="true">
+                <path d="M12 3l7 3v5c0 4.4-2.9 8.4-7 9-4.1-.6-7-4.6-7-9V6l7-3z"/>
+                <path d="M9.5 12h5M12 9.5v5"/>
+              </svg>
+            </span>
+            <h3 class="mt-4 text-base font-semibold text-fg">Infraestructura y redes</h3>
+            <p class="mt-2 text-sm leading-relaxed text-muted">Escaneos con Nmap, validación de parámetros contra una lista blanca y análisis de exposición de servicios.</p>
+          </div>
+
+          <div class="card group p-5 transition duration-300 hover:border-accent/40 hover:bg-surface-2/60">
+            <span class="grid size-10 place-items-center rounded-xl border border-line/70 bg-surface-2/60 text-cyan transition group-hover:border-cyan/40">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="size-5" aria-hidden="true">
+                <path d="M4 17V9M9 17V5M14 17v-4M19 17v-7"/>
+                <path d="M3 20h18"/>
+              </svg>
+            </span>
+            <h3 class="mt-4 text-base font-semibold text-fg">SOC / Logs y eventos</h3>
+            <p class="mt-2 text-sm leading-relaxed text-muted">Consulta de agentes y alertas en la API y el Indexer de Wazuh, triaje y generación de reportes.</p>
+          </div>
+
+          <div class="card group p-5 transition duration-300 hover:border-accent/40 hover:bg-surface-2/60">
+            <span class="grid size-10 place-items-center rounded-xl border border-line/70 bg-surface-2/60 text-warn transition group-hover:border-warn/40">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="size-5" aria-hidden="true">
+                <circle cx="12" cy="12" r="8"/>
+                <path d="M12 4v3M12 17v3M4 12h3M17 12h3"/>
+                <circle cx="12" cy="12" r="2.5"/>
+              </svg>
+            </span>
+            <h3 class="mt-4 text-base font-semibold text-fg">Threat intelligence</h3>
+            <p class="mt-2 text-sm leading-relaxed text-muted">Búsqueda semántica sobre un índice FAISS de MITRE ATT&amp;CK para mapear hallazgos a técnicas y tácticas.</p>
+          </div>
+        </div>
+
+        <div class="mt-4 grid gap-4 lg:grid-cols-[1.5fr_1fr]">
+          <div class="card p-5 sm:p-6" data-reveal>
+            <h3 class="font-mono text-[11px] uppercase tracking-[0.2em] text-faint">Construido con</h3>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span class="chip">Python 3.10+</span>
+              <span class="chip">LangGraph</span>
+              <span class="chip">LangChain</span>
+              <span class="chip">FAISS</span>
+              <span class="chip">Wazuh</span>
+              <span class="chip">Nmap</span>
+              <span class="chip">ReportLab</span>
+              <span class="chip">Rich</span>
+              <span class="chip">LangSmith</span>
+              <span class="chip">Docker</span>
+              <span class="chip">uv</span>
+            </div>
+          </div>
+
+          <div class="card p-5 sm:p-6" data-reveal>
+            <h3 class="font-mono text-[11px] uppercase tracking-[0.2em] text-faint">Contexto académico</h3>
+            <dl class="mt-4 space-y-2.5 text-sm">
+              <div class="flex justify-between gap-4">
+                <dt class="text-muted">Materia</dt>
+                <dd class="text-right font-medium text-fg">Inteligencia Artificial</dd>
+              </div>
+              <div class="flex justify-between gap-4">
+                <dt class="text-muted">Institución</dt>
+                <dd class="text-right font-medium text-fg">Instituto Universitario Aeronáutico</dd>
+              </div>
+              <div class="flex justify-between gap-4">
+                <dt class="text-muted">Cohorte</dt>
+                <dd class="text-right font-medium text-fg">2026</dd>
+              </div>
+              <div class="flex justify-between gap-4">
+                <dt class="text-muted">Docente</dt>
+                <dd class="text-right font-medium text-fg">Alexis Gonzalez</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ RESULTADOS ============ -->
+    <section id="resultados" class="scroll-mt-24 border-t border-line/60 py-20 sm:py-24">
+      <div class="container-x">
+        <div data-reveal>
+          <p class="section-kicker">Resultados</p>
+          <h2 class="section-title">Retrieval medido sobre alertas reales</h2>
+          <p class="lead">
+            Se evaluó el módulo de recuperación sobre <strong>31 alertas reales de Wazuh</strong>
+            anotadas con su técnica MITRE ATT&amp;CK correcta. Cada sistema debía devolver las
+            5 técnicas más probables para cada alerta.
+          </p>
+        </div>
+
+        <div class="mt-10 grid gap-4 sm:grid-cols-3" data-reveal>
+          <div class="card p-5">
+            <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-faint">Hit@5</p>
+            <p class="mt-2 font-mono text-4xl font-semibold tracking-tight text-accent">67.74<span class="text-xl text-accent/70"> %</span></p>
+            <p class="mt-1.5 text-xs text-muted">Gemini embedding-001</p>
+          </div>
+          <div class="card p-5">
+            <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-faint">MRR</p>
+            <p class="mt-2 font-mono text-4xl font-semibold tracking-tight text-cyan">0.4866</p>
+            <p class="mt-1.5 text-xs text-muted">Gemini embedding-001</p>
+          </div>
+          <div class="card p-5">
+            <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-faint">Mejora vs. baseline</p>
+            <p class="mt-2 font-mono text-4xl font-semibold tracking-tight text-warn">+35.48<span class="text-xl text-warn/70"> pp</span></p>
+            <p class="mt-1.5 text-xs text-muted">Hit@5 frente a TF-IDF</p>
+          </div>
+        </div>
+
+        <div class="card mt-6 overflow-hidden" data-reveal>
+          <div class="overflow-x-auto">
+            <table class="results-table w-full min-w-[760px] text-left">
+              <caption class="sr-only">Comparativa de modelos de embeddings y baseline TF-IDF</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Modelo / Sistema</th>
+                  <th scope="col">Tipo / Proveedor</th>
+                  <th scope="col" class="text-center">Muestras</th>
+                  <th scope="col" class="text-center">Hit@5</th>
+                  <th scope="col" class="text-center">MRR</th>
+                  <th scope="col" class="text-right">Latencia prom.</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="best-row">
+                  <td>
+                    <span class="flex items-center gap-2">
+                      <strong>Gemini embedding-001</strong>
+                      <span class="chip chip-accent px-2 py-0.5 text-[9px]">mejor</span>
+                    </span>
+                  </td>
+                  <td>Semántico / Google Cloud</td>
+                  <td class="text-center font-mono">31</td>
+                  <td class="text-center font-mono font-semibold text-accent">67.74 %</td>
+                  <td class="text-center font-mono font-semibold">0.4866</td>
+                  <td class="text-right font-mono">636.4 ms</td>
+                </tr>
+                <tr>
+                  <td>Qwen3 embedding-0.6b</td>
+                  <td>Semántico / Cloudflare Workers AI</td>
+                  <td class="text-center font-mono">31</td>
+                  <td class="text-center font-mono">54.84 %</td>
+                  <td class="text-center font-mono">0.3989</td>
+                  <td class="text-right font-mono">2012.0 ms</td>
+                </tr>
+                <tr>
+                  <td>BGE-Large-EN-v1.5</td>
+                  <td>Semántico / Cloudflare Workers AI</td>
+                  <td class="text-center font-mono">31</td>
+                  <td class="text-center font-mono">51.61 %</td>
+                  <td class="text-center font-mono">0.3505</td>
+                  <td class="text-right font-mono">651.7 ms</td>
+                </tr>
+                <tr>
+                  <td>Plamo embedding-1b</td>
+                  <td>Semántico / Cloudflare Workers AI</td>
+                  <td class="text-center font-mono">14*</td>
+                  <td class="text-center font-mono">50.00 %</td>
+                  <td class="text-center font-mono">0.3952</td>
+                  <td class="text-right font-mono">748.9 ms</td>
+                </tr>
+                <tr>
+                  <td><strong class="text-muted">Baseline (TF-IDF)</strong></td>
+                  <td>Léxico tradicional / algorítmico</td>
+                  <td class="text-center font-mono">31</td>
+                  <td class="text-center font-mono">32.26 %</td>
+                  <td class="text-center font-mono">0.2769</td>
+                  <td class="text-right font-mono font-semibold text-fg">6.8 ms</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <p class="mt-3 text-xs leading-relaxed text-faint">
+          *Plamo procesó 14 de las 31 alertas antes de que se interrumpiera el experimento;
+          es un modelo orientado principalmente al japonés.
+        </p>
+
+        <figure class="mt-8" data-reveal>
+          <div class="shot">
+            <div class="shot-bar">
+              <span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span>
+              <span class="shot-label ml-2">comparativa · embeddings</span>
+            </div>
+            <img src="img/comparativa_embeddings.png" alt="Gráfico comparativo de modelos de embeddings" loading="lazy" width="1600" height="800" class="bg-white/95 p-3">
+          </div>
+          <figcaption class="mt-2.5 text-center text-xs text-faint">
+            Comparativa de Hit@5, MRR y latencia entre los modelos evaluados y el baseline TF-IDF.
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ============ AUTOR ============ -->
+    <section id="autor" class="scroll-mt-24 border-t border-line/60 py-20 sm:py-24">
+      <div class="container-x">
+        <div data-reveal>
+          <p class="section-kicker">Autor</p>
+          <h2 class="section-title">Quién lo construyó</h2>
+        </div>
+
+        <div class="card mt-8 flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8" data-reveal>
+          <div class="flex items-center gap-4">
+            <div class="grid size-14 shrink-0 place-items-center rounded-2xl border border-accent/25 bg-accent/10 font-mono text-lg font-semibold text-accent">JC</div>
+            <div>
+              <p class="text-lg font-semibold tracking-tight text-fg">Joaquin Cernik</p>
+              <p class="mt-1 text-sm text-muted">Trabajo final · Inteligencia Artificial · IUA 2026</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <a class="btn btn-ghost btn-sm" href="https://github.com/joaquincernik">
+              <svg viewBox="0 0 24 24" fill="currentColor" class="size-4" aria-hidden="true">
+                <path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-.88-.01-1.73-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.91-.63.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.35 1.12 2.92.86.09-.66.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.7 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 2.5-.34c.85 0 1.71.12 2.5.34 1.91-1.33 2.75-1.05 2.75-1.05.55 1.4.2 2.44.1 2.7.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.8-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.59.69.49A10.02 10.02 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/>
+              </svg>
+              GitHub
+            </a>
+            <a class="btn btn-ghost btn-sm" href="https://linkedin.com/in/joaquincernik">
+              <svg viewBox="0 0 24 24" fill="currentColor" class="size-4" aria-hidden="true">
+                <path d="M6.94 8.5H3.56V21h3.38V8.5zM5.25 3a1.97 1.97 0 1 0 0 3.94 1.97 1.97 0 0 0 0-3.94zM20.44 21h-3.37v-6.09c0-1.45-.52-2.44-1.81-2.44-.99 0-1.58.67-1.84 1.31-.1.23-.12.55-.12.87V21H9.93s.05-11.36 0-12.5h3.37v1.77c.45-.69 1.25-1.68 3.04-1.68 2.22 0 3.88 1.45 3.88 4.57V21z"/>
+              </svg>
+              LinkedIn
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-line/60 py-10">
+    <div class="container-x flex flex-col items-center justify-between gap-5 text-center sm:flex-row sm:text-left">
+      <p class="text-xs leading-relaxed text-faint">
+        Trabajo final — Inteligencia Artificial · Instituto Universitario Aeronáutico · 2026
       </p>
-
-      <!-- 0. Configuración del entorno -->
-      <div class="demo-block">
-        <h3>0. Configuración del Entorno y Verificación de Agentes</h3>
-        <p>Iniciamos el asistente con <code>uv run capazeta</code>, verificamos la conectividad con el SIEM (Wazuh) y confirmamos los agentes activos en el sistema:</p>
-
-        <div class="demo-media">
-          <img src="img/image.png" alt="Inicio del agente Capazeta en consola CLI">
-        </div>
-        <p class="caption">Inicio del CLI interactivo de Capazeta con interfaz Rich.</p>
-
-        <div class="demo-media">
-          <img src="img/01_demo_MVP/image.png" alt="Panel de control Wazuh SOC activo">
-        </div>
-        <p class="caption">Servicios del SOC (Wazuh Manager/Indexer) levantados y operativos.</p>
-
-        <div class="demo-media">
-          <img src="img/01_demo_MVP/image copy.png" alt="Agente Linux reportando al SIEM">
-        </div>
-        <p class="caption">Agente de monitoreo Linux reportando telemetría en tiempo real.</p>
-
-        <div class="demo-media">
-          <img src="img/image copy.png" alt="Consulta CLI sobre agentes activos en Wazuh">
-        </div>
-        <p class="caption">Verificación en CLI: <code>Prompt> ¿qué agentes hay reportando a wazuh en este momento?</code></p>
+      <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs">
+        <a class="text-muted transition hover:text-accent" href="https://github.com/joaquincernik/inteligencia-artificial-final">Código fuente</a>
+        <a class="text-muted transition hover:text-accent" href="https://github.com/joaquincernik/inteligencia-artificial-final/blob/main/LICENSE">Licencia MIT</a>
+        <a class="text-muted transition hover:text-accent" href="#top">Volver arriba ↑</a>
       </div>
-
-      <!-- 1. Enrutamiento automático -->
-      <div class="demo-block">
-        <h3>1. Enrutamiento Automático hacia el Dominio Correspondiente</h3>
-        <p>El nodo central <strong>router</strong> analiza la intención de la consulta en lenguaje natural y la canaliza dinámicamente hacia el subagente especialista sin invocar herramientas innecesarias.</p>
-
-        <div class="demo-media">
-          <img src="img/grafico.png" alt="Arquitectura del Grafo LangGraph de Capazeta">
-        </div>
-        <p class="caption">Grafo LangGraph: Router central, subagentes por dominio y nodos de herramientas.</p>
-
-        <h4>A. Redirección a <code>infraestructura_redes</code></h4>
-        <blockquote>
-          <p><strong>Prompt:</strong> "¿Cuáles son las mejores prácticas teóricas para segmentar una red corporativa utilizando VLANs sin realizar escaneos activos?"</p>
-        </blockquote>
-        <div class="demo-media">
-          <img src="img/image copy 2.png" alt="Respuesta del subagente infraestructura_redes">
-        </div>
-
-        <h4>B. Redirección a <code>threat_intel</code></h4>
-        <blockquote>
-          <p><strong>Prompt:</strong> "¿Cuáles son las mejores prácticas teóricas para segmentar una red corporativa utilizando VLANs sin realizar escaneos activos?. Sé muy breve"</p>
-        </blockquote>
-        <div class="demo-media">
-          <img src="img/image copy 3.png" alt="Respuesta del subagente threat_intel">
-        </div>
-
-        <h4>C. Redirección a <code>soc_logs</code></h4>
-        <blockquote>
-          <p><strong>Prompt:</strong> "¿Qué diferencias operativas existen entre centralizar logs mediante Syslog rsyslog vs un agente liviano como Wazuh Agent?"</p>
-        </blockquote>
-        <div class="demo-media">
-          <img src="img/image copy 4.png" alt="Respuesta del subagente soc_logs">
-        </div>
-      </div>
-
-      <!-- 2. Tools Hardening y reportes -->
-      <div class="demo-block">
-        <h3>2. Tools Hardening y Generación de Reportes</h3>
-        <p>Demostración de ejecución de escaneo de red utilizando <code>infra_tools</code> bajo la lista blanca de argumentos (<em>allowlist</em>) de Nmap para prevenir inyecciones de código o parámetros no autorizados por parte del LLM.</p>
-
-        <blockquote>
-          <p><strong>Prompt:</strong> "Realiza un escaneo de red rápido con nmap sobre 192.168.0.0/24 para identificar hosts activos y puertos abiertos principales. Guarda el resultado en un reporte en formato Markdown y en pdf dentro de la carpeta reports."</p>
-        </blockquote>
-
-        <div class="demo-media">
-          <img src="img/image copy 6.png" alt="Ejecución segura de Nmap en consola">
-        </div>
-        <p class="caption">Escaneo Nmap ejecutado de forma segura aplicando la allowlist de parámetros.</p>
-
-        <p class="caption-lead">Reportes consolidados generados en disco en formatos Markdown y PDF:</p>
-        <div class="demo-media">
-          <img src="img/image copy 7.png" alt="Reporte en formato Markdown generado en disco">
-        </div>
-        <div class="demo-media">
-          <img src="img/image copy 8.png" alt="Reporte en formato PDF generado con ReportLab">
-        </div>
-      </div>
-
-      <!-- 3. Consulta directa al RAG por Vertical -->
-      <div class="demo-block">
-        <h3>3. Consulta Directa al RAG de MITRE ATT&amp;CK (FAISS)</h3>
-
-        <!-- Vertical 1 -->
-        <div class="vertical-card">
-          <h4>Vertical 1: Infraestructura de Redes (<code>infraestructura_redes</code>)</h4>
-          <p><strong>Caso de Uso:</strong> Evaluación de exposición de servicios y correlación de mitigaciones según la matriz MITRE ATT&amp;CK.</p>
-          <blockquote>
-            <p><strong>Prompt:</strong> "Dirígete al agente infraestructura_redes. Ejecuta un escaneo sobre el host objetivo 192.168.0.26 utilizando infra_tools. Una vez identificados los puertos y servicios expuestos, consulta en el RAG la técnica MITRE relacionada con el descubrimiento de servicios de red (Network Service Discovery)."</p>
-          </blockquote>
-
-          <div class="demo-media">
-            <img src="img/image copy 9.png" alt="Ejecución RAG en Infraestructura de redes">
-          </div>
-
-          <div class="analysis-box">
-            <h5>1. Análisis de la ejecución (Lo que hizo el agente)</h5>
-            <ul>
-              <li><strong>Enrutamiento:</strong> El nodo <code>router</code> interceptó la solicitud y la derivó directamente al agente especialista <code>infraestructura_redes</code>.</li>
-              <li><strong>Uso de Tools:</strong> El agente ejecutó la herramienta <code>infra_tools</code> invocando <code>nmap</code> de forma segura (aplicando la <em>allowlist</em> de parámetros) sobre la IP <code>192.168.0.26</code> para auditar los puertos activos.</li>
-              <li><strong>Consulta RAG:</strong> Con los puertos identificados, realizó la búsqueda vectorial en el índice FAISS consultando por el concepto <em>"Network Service Discovery"</em>.</li>
-              <li><strong>Síntesis:</strong> Correlacionó los hallazgos técnicos del escaneo activo con la ficha oficial de MITRE ATT&amp;CK y entregó la descripción contextualizada del riesgo.</li>
-            </ul>
-
-            <h5>2. Resultado Esperado</h5>
-            <p>Se esperaba que el agente aislara el flujo en la vertical de red, ejecutara un escaneo válido sobre el host objetivo, identificara la técnica exacta de MITRE asociada al escaneo de servicios (<code>T1046</code>) y presentara una propuesta de mitigación orientada a infraestructura.</p>
-
-            <h5>3. Por qué funcionó correctamente</h5>
-            <ul>
-              <li><strong>Validación de Parámetros:</strong> La lista blanca de argumentos de <code>nmap</code> evitó que el LLM introdujera <em>flags</em> no permitidos o peligrosos durante el escaneo.</li>
-              <li><strong>Recuperación Semántica Fiel:</strong> El modelo de <em>embeddings</em> asoció la descripción de los servicios abiertos con la entrada vectorial de <code>T1046</code> (Network Service Discovery), superando la limitación de coincidencias textuales rígidas.</li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Vertical 2 -->
-        <div class="vertical-card">
-          <h4>Vertical 2: Threat Intelligence (<code>threat_intel</code>)</h4>
-          <p><strong>Caso de Uso:</strong> Caracterización de persistencia y evasión ante la detección de scripts o unidades de servicio sospechosas.</p>
-          <blockquote>
-            <p><strong>Prompt:</strong> "Dirígete al agente threat_intel. Analiza el evento donde se detectó la creación de un nuevo servicio en /etc/systemd/system/ seguido de la eliminación de archivos temporales en /tmp/. Utiliza el RAG sobre la base de datos de MITRE ATT&amp;CK para identificar las técnicas y subtécnicas correspondientes a la creación de servicios en Linux y la eliminación de evidencia. Genera un informe de Threat Intelligence en Markdown que detalle el comportamiento del atacante y sugiera reglas de detección para implementar en Wazuh."</p>
-          </blockquote>
-
-          <div class="demo-media">
-            <img src="img/image copy 10.png" alt="Ejecución RAG en Threat Intelligence">
-          </div>
-
-          <div class="analysis-box">
-            <h5>1. Análisis de la ejecución (Lo que hizo el agente)</h5>
-            <ul>
-              <li><strong>Enrutamiento:</strong> El <code>router</code> delegó la orden al subgrafo especialista <code>threat_intel</code>.</li>
-              <li><strong>Descomposición Semántica:</strong> El agente identificó dos vectores tácticos en la narrativa del prompt y realizó dos búsquedas vectoriales simultáneas en FAISS:
-                <ul>
-                  <li>Creación de persistencia mediante archivos de servicio &rarr; <code>T1543.002</code> (Systemd Service).</li>
-                  <li>Borrado de artefactos en <code>/tmp/</code> &rarr; <code>T1070.004</code> (File Deletion).</li>
-                </ul>
-              </li>
-              <li><strong>Generación de Artefactos:</strong> Construyó un informe en Markdown donde analizó la intención del atacante y propuso reglas XML específicas para cargar en el SIEM Wazuh.</li>
-            </ul>
-
-            <h5>2. Resultado Esperado</h5>
-            <p>Se esperaba que el agente mapeara correctamente ambas acciones del atacante a sus respectivas técnicas y subtécnicas de Linux dentro del marco MITRE ATT&amp;CK, redactando un reporte formal de inteligencia con reglas de detección accionables sin requerir escaneos de red.</p>
-
-            <h5>3. Por qué funcionó correctamente</h5>
-            <ul>
-              <li><strong>Mapeo Multidimensional RAG:</strong> La base vectorial capturó la equivalencia entre rutas del sistema operativo (<code>/etc/systemd/system/</code>) y su abstracción dentro del framework (<code>T1543.002</code>), así como la acción sobre <code>/tmp/</code> con la evasión de defensas (<code>T1070.004</code>).</li>
-              <li><strong>Especialización del Dominio:</strong> Al no requerir ejecución de herramientas de red, el subgrafo procesó la consulta íntegramente combinando inferencia del LLM y contexto recuperado del RAG.</li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Vertical 3 -->
-        <div class="vertical-card">
-          <h4>Vertical 3: SOC Logs (<code>soc_logs</code>)</h4>
-          <p><strong>Caso de Uso:</strong> Enriquecimiento de alertas de Wazuh en tiempo real e identificación de patrones de escalada de privilegios.</p>
-          <blockquote>
-            <p><strong>Prompt:</strong> "Dirígete al agente soc_logs. Examina los registros de alertas recientes cargados por Wazuh en relación con el agente Linux ubuntuLocal. Se observan múltiples fallos de autenticación en auth.log seguidos por una modificación en /etc/sudoers. Utiliza el RAG para mapear este patrón de ataque a las técnicas de Fuerza Bruta y Escalada de Privilegios de MITRE ATT&amp;CK. Luego, consulta las herramientas del SOC para extraer los logs detallados y construye la línea de tiempo del incidente en un reporte pdf"</p>
-          </blockquote>
-
-          <div class="demo-media">
-            <img src="img/image copy 12.png" alt="Ejecución RAG en SOC Logs - Consola CLI">
-          </div>
-
-          <div class="demo-media">
-            <img src="img/image copy 13.png" alt="Ejecución RAG en SOC Logs - Generación de reporte PDF">
-          </div>
-
-          <div class="analysis-box">
-            <h5>1. Análisis de la ejecución (Lo que hizo el agente)</h5>
-            <ul>
-              <li><strong>Enrutamiento Dinámico:</strong> El nodo <code>router</code> identificó la intención de análisis de eventos del SIEM y canalizó el flujo hacia el agente especializado <code>soc_logs</code>.</li>
-              <li><strong>Invocación Interactiva de Tools y RAG:</strong> Tal como refleja la traza de la consola, el agente ejecutó una secuencia coordinada de acciones:
-                <ul>
-                  <li><code>Consultando Wazuh...</code>: Invocó <code>soc_tools</code> para realizar consultas activas al Indexer/API de Wazuh sobre el agente <code>ubuntuLocal</code> (ID: 001).</li>
-                  <li><code>Buscando en MITRE ATT&amp;CK...</code>: Ejecutó una búsqueda semántica en la base vectorial FAISS para mapear el comportamiento detectado.</li>
-                  <li><code>Consultando Wazuh...</code>: Reconsultó la telemetría histórica de <code>auditd</code> para extraer los eventos exactos de comandos ejecutados (<code>/usr/bin/docker</code>, <code>/usr/bin/git</code>, <code>/usr/bin/uname</code>, etc.).</li>
-                  <li><strong>Mapeo Táctico Identificado:</strong>
-                    <ul>
-                      <li>Acceso a Credenciales / Fuerza Bruta: Mapeado a <code>T1110</code> (Brute Force).</li>
-                      <li>Escalada de Privilegios: Mapeado a <code>T1548.003</code> (Sudo and Sudo Caching) y <code>T1068</code> (Exploitation for Privilege Escalation), asociándolo a la modificación anómala de <code>/etc/sudoers</code>.</li>
-                    </ul>
-                  </li>
-                </ul>
-              </li>
-              <li><strong>Exportación de Artefactos:</strong> Generó y guardó exitosamente el informe de auditoría consolidado en el sistema de archivos: <code>reports/wazuh_alerts_20261106-114422.pdf</code>, incluyendo la tabla detallada con alertas procesadas, IDs de regla (ej. 80792) y comandos auditados.</li>
-            </ul>
-
-            <h5>2. Resultado Esperado</h5>
-            <p>Se esperaba que el agente especialista en logs integrara la lectura activa del SIEM (Wazuh) con el marco conceptual del RAG (MITRE ATT&amp;CK) para caracterizar un vector de ataque compuesto (acceso inicial por fuerza bruta seguido de una elevación de privilegios en Linux), finalizando con la exportación persistente de un reporte PDF listo para entrega ejecutiva o de auditoría.</p>
-
-            <h5>3. Por qué funcionó correctamente</h5>
-            <ul>
-              <li><strong>Orquestación Multi-paso (Grafo + Tools):</strong> El agente no intentó adivinar la información; alternó de forma autónoma entre consultar el motor vectorial FAISS y realizar llamadas de API a las herramientas del SOC (<code>soc_tools</code>).</li>
-              <li><strong>Precisión Semántica del RAG:</strong> El modelo de <em>embeddings</em> asoció la narrativa de la alerta (modificación de <code>/etc/sudoers</code>) con la técnica específica <code>T1548.003</code>, algo que una regla rígida de búsqueda léxica sin IA habría pasado por alto o catalogado de manera incompleta.</li>
-              <li><strong>Cierre de Ciclo Operativo:</strong> El agente completó el flujo integral desde la entrada en lenguaje natural hasta la persistencia física de un documento PDF con formato institucional en disco.</li>
-            </ul>
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-  </section>
-
-  <section id="sobre">
-    <div class="container">
-      <h2>Sobre el proyecto</h2>
-      <p class="lead">
-        Los equipos de seguridad dedican buena parte de su tiempo a tareas repetitivas:
-        interpretar alertas de un SIEM, mapearlas a técnicas de ataque conocidas y decidir
-        qué revisar primero. Capazeta automatiza ese primer triaje combinando herramientas
-        reales con un modelo de lenguaje y una base de conocimiento estructurada.
-      </p>
-      <p class="lead">
-        El sistema está construido sobre <strong>LangGraph</strong> y <strong>LangChain</strong>.
-        Un router central analiza cada consulta y la deriva a uno de los tres subagentes
-        activos. Cada subagente puede ejecutar herramientas en un bucle de <em>tool calling</em>
-        y devolver una respuesta fundamentada en los resultados obtenidos.
-      </p>
-
-      <div class="feature-grid">
-        <div class="feature-card">
-          <h3>Infraestructura y redes</h3>
-          <p>Escaneos con Nmap, validación de parámetros contra una lista blanca y análisis de exposición de servicios.</p>
-        </div>
-        <div class="feature-card">
-          <h3>SOC / Logs y eventos</h3>
-          <p>Consulta de agentes y alertas en la API y el Indexer de Wazuh, triaje y generación de reportes.</p>
-        </div>
-        <div class="feature-card">
-          <h3>Threat intelligence</h3>
-          <p>Búsqueda semántica sobre un índice FAISS de MITRE ATT&amp;CK para mapear hallazgos a técnicas y tácticas.</p>
-        </div>
-      </div>
-
-      <h3>Construido con</h3>
-      <div class="pills">
-        <span class="pill">Python 3.10+</span>
-        <span class="pill">LangGraph</span>
-        <span class="pill">LangChain</span>
-        <span class="pill">FAISS</span>
-        <span class="pill">Wazuh</span>
-        <span class="pill">Nmap</span>
-        <span class="pill">ReportLab</span>
-        <span class="pill">Rich</span>
-        <span class="pill">LangSmith</span>
-        <span class="pill">Docker</span>
-        <span class="pill">uv</span>
-      </div>
-    </div>
-  </section>
-
-  <section id="resultados">
-    <div class="container">
-      <h2>Resultados</h2>
-      <p class="lead">
-        Se evaluó el módulo de recuperación sobre <strong>31 alertas reales de Wazuh</strong>
-        anotadas con su técnica MITRE ATT&amp;CK correcta. Cada sistema debía devolver las
-        5 técnicas más probables para cada alerta.
-      </p>
-
-      <div class="stats">
-        <div class="stat-card">
-          <div class="value">67.74 %</div>
-          <div class="label">Hit@5 — Gemini embedding-001</div>
-        </div>
-        <div class="stat-card">
-          <div class="value">0.4866</div>
-          <div class="label">MRR — Gemini embedding-001</div>
-        </div>
-        <div class="stat-card">
-          <div class="value">+35.48 pp</div>
-          <div class="label">Hit@5 vs. baseline TF-IDF</div>
-        </div>
-      </div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Modelo / Sistema</th>
-              <th>Tipo / Proveedor</th>
-              <th>Muestras</th>
-              <th>Hit@5</th>
-              <th>MRR</th>
-              <th>Latencia prom.</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Gemini embedding-001</strong></td>
-              <td>Semántico / Google Cloud</td>
-              <td>31</td>
-              <td><strong>67.74 %</strong></td>
-              <td><strong>0.4866</strong></td>
-              <td>636.4 ms</td>
-            </tr>
-            <tr>
-              <td>Qwen3 embedding-0.6b</td>
-              <td>Semántico / Cloudflare Workers AI</td>
-              <td>31</td>
-              <td>54.84 %</td>
-              <td>0.3989</td>
-              <td>2012.0 ms</td>
-            </tr>
-            <tr>
-              <td>BGE-Large-EN-v1.5</td>
-              <td>Semántico / Cloudflare Workers AI</td>
-              <td>31</td>
-              <td>51.61 %</td>
-              <td>0.3505</td>
-              <td>651.7 ms</td>
-            </tr>
-            <tr>
-              <td>Plamo embedding-1b</td>
-              <td>Semántico / Cloudflare Workers AI</td>
-              <td>14*</td>
-              <td>50.00 %</td>
-              <td>0.3952</td>
-              <td>748.9 ms</td>
-            </tr>
-            <tr>
-              <td><strong>Baseline (TF-IDF)</strong></td>
-              <td>Léxico tradicional / algorítmico</td>
-              <td>31</td>
-              <td>32.26 %</td>
-              <td>0.2769</td>
-              <td><strong>6.8 ms</strong></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="caption">
-        *Plamo procesó 14 de las 31 alertas antes de que se interrumpiera el experimento;
-        es un modelo orientado principalmente al japonés.
-      </p>
-
-      <div class="demo-media">
-        <img src="img/comparativa_embeddings.png" alt="Gráfico comparativo de modelos de embeddings">
-      </div>
-      <p class="caption">
-        Comparativa de Hit@5, MRR y latencia entre los modelos evaluados y el baseline TF-IDF.
-      </p>
-    </div>
-  </section>
-
-  <section id="autor">
-    <div class="container">
-      <h2>Autor</h2>
-      <div class="authors">
-        <div class="author-card">
-          <div class="name">Joaquin Cernik</div>
-          <div class="links">
-            <a href="https:/github.com/joaquincernik">GitHub</a>
-            <a href="https:/linkedin.com/in/joaquincernik">LinkedIn</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <footer>
-    <div class="container">
-      <p>
-        Trabajo final — Inteligencia Artificial · Instituto Universitario Aeronáutico · 2026<br>
-        <a href="https:/github.com/joaquincernik/inteligencia-artificial-final">Código fuente en GitHub</a>
-        · <a href="https:/github.com/joaquincernik/inteligencia-artificial-final/blob/main/LICENSE">Licencia MIT</a>
-      </p>
     </div>
   </footer>
 
