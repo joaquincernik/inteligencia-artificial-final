@@ -25,6 +25,7 @@
 - [Instalación](#-instalación)
 - [Integración con Wazuh (Docker)](#integración-con-wazuh-docker)
 - [Uso](#-uso)
+- [Tests](#-tests)
 - [Roadmap](#-roadmap)
 - [Autor](#-autor)
 - [Licencia](#-licencia)
@@ -198,7 +199,7 @@ Para automatizar estas métricas se planea usar [**Ragas**](https://docs.ragas.i
 │   └── mitre/                  # Datos y catálogo de técnicas de MITRE ATT&CK
 ├── reports/                    # CSVs de evaluación y reportes generados (.md/.pdf)
 ├── notebooks/                  # Notebooks de exploración, evaluación y demos
-├── tests/                      # Dataset de evaluación y script de eventos para Wazuh
+├── tests/                      # Tests de Nmap y PDFs, datasets de evaluación y script de Wazuh
 ├── infra/
 │   └── wazuh/                  # Stack Docker single-node de Wazuh
 └── docs/
@@ -425,12 +426,53 @@ Herramientas con soporte PDF: `run_nmap_scan`, `wazuh_search_alerts`, `wazuh_mit
 
 ---
 
+## 🧪 Tests
+
+Los tests cubren los dos puntos críticos de las herramientas: la **allowlist de Nmap** (que un prompt malicioso no pueda colar `--script`, flags de escritura o inyecciones de shell) y la **generación de reportes PDF** con ReportLab.
+
+```bash
+uv sync --group dev
+uv run pytest
+```
+
+Son 15 funciones de test rápidas (50 casos con parametrización) repartidas por tema: **10 de Nmap en [`tests/test_nmap.py`](tests/test_nmap.py)** y **5 de PDFs en [`tests/test_pdf.py`](tests/test_pdf.py)**. Corren en menos de un segundo y no necesitan red, credenciales ni el binario de `nmap`: la validación se prueba sobre funciones puras y el escaneo se simula con un `PortScanner` falso. Los PDFs se escriben en directorios temporales, así que no ensucian `reports/`.
+
+Los casos maliciosos incluyen `--script vuln`, `--script=http-shellshock`, `-sV; rm -rf /`, `$(whoami)`, backticks, `-oN`/`-oX` (escritura de archivos), `-iL` (lista de hosts), `-p` (puertos fuera del parámetro validado), `-D`/`-S`/`-e` (spoofing) y targets/puertos fuera de rango.
+
+### Test de integración contra una red real
+
+Además del suite rápido hay **un test opt-in** (en `tests/test_nmap.py`, marker `network`) que ejecuta Nmap de verdad. Se omite si no le pasás una red:
+
+```bash
+# Suite rápida: el test de red se omite
+uv run pytest
+
+# Todos los tests de Nmap (los rápidos + el de red)
+uv run pytest tests/test_nmap.py --nmap-target 192.168.0.0/24 -s
+
+# Solo el test de red
+uv run pytest -m network --nmap-target 192.168.0.0/24 -s
+
+# Con otros flags permitidos y un rango de puertos
+uv run pytest -m network --nmap-target 192.168.0.0/24 --nmap-arguments="-sT -F --open" --nmap-ports="22,80,443" -s
+
+# Equivalente con variable de entorno
+CAPAZETA_NMAP_TARGET=192.168.0.0/24 uv run pytest -m network -s
+```
+
+El target se valida con `_validate_target` y los flags con la misma allowlist que usa el agente, así que `--nmap-arguments="--script vuln"` se rechaza igual que desde la CLI. El test no genera reportes (`save_md`/`save_pdf` quedan en `False`). Si la red bloquea ICMP y `-sn` no encuentra hosts, probá con `--nmap-arguments="-sT -F --open"`.
+
+> Cuando el valor de `--nmap-arguments` empieza con `-`, usá la forma con `=` (`--nmap-arguments="-sT -F --open"`). Si lo pasás separado por un espacio, pytest interpreta `-sT` como la opción `-s` y falla con `argument -s: ignored explicit argument`.
+
+---
+
 ## 🗺️ Roadmap
 
 ### Completado
 - [x] **Evaluación cuantitativa de Retrieval:** métricas *Hit@5* y *MRR* sobre 31 alertas de Wazuh anotadas con técnicas MITRE ATT&CK. Ver [Resultados](#-resultados).
 - [x] **Baseline comparativo léxico:** implementación y evaluación de TF-IDF contra los modelos de embeddings (32.26 % de Hit@5 vs. 67.74 % del mejor modelo semántico).
 - [x] **Exportación de reportes a PDF:** implementada con `save_pdf=True` en `run_nmap_scan`, `wazuh_search_alerts`, `wazuh_mitre_coverage` y `search_mitre_attack`. El Markdown de `report.py` se renderiza a PDF con ReportLab en `src/capazeta/tools/pdf_report.py`.
+- [x] **Tests automáticos:** suite de `pytest` en [`tests/test_nmap.py`](tests/test_nmap.py) y [`tests/test_pdf.py`](tests/test_pdf.py) sobre la allowlist de Nmap (scripts, inyecciones, flags peligrosos) y la generación de PDFs. Ver [Tests](#-tests).
 
 ### Mejoras propuestas para futuros proyectos
 - [ ] **Evaluación de generación LLM:** medición de *Fidelidad (Faithfulness)* y *Relevancia de la Respuesta (Answer Relevance)* utilizando [Ragas](https://docs.ragas.io/) integrado con [LangSmith](https://www.langchain.com/langsmith).
