@@ -7,6 +7,7 @@
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/status-MVP%20funcional-brightgreen.svg)]()
+[![Tests](https://github.com/joaquincernik/inteligencia-artificial-final/actions/workflows/tests.yml/badge.svg)](https://github.com/joaquincernik/inteligencia-artificial-final/actions/workflows/tests.yml)
 
 </div>
 
@@ -434,6 +435,8 @@ Los tests cubren los dos puntos críticos de las herramientas: la **allowlist de
 uv sync --group dev
 uv run pytest
 ```
+
+En GitHub Actions, el workflow [`tests.yml`](.github/workflows/tests.yml) corre automáticamente la suite rápida (`uv run pytest -m "not network"`) en cada push a `master`, en las ramas `features/**` y en los Pull Requests. El test de red no se ejecuta en CI: se corre solo en local cuando le pasás `--nmap-target`.
 
 Son 15 funciones de test rápidas (50 casos con parametrización) repartidas por tema: **10 de Nmap en [`tests/test_nmap.py`](tests/test_nmap.py)** y **5 de PDFs en [`tests/test_pdf.py`](tests/test_pdf.py)**. Corren en menos de un segundo y no necesitan red, credenciales ni el binario de `nmap`: la validación se prueba sobre funciones puras y el escaneo se simula con un `PortScanner` falso. Los PDFs se escriben en directorios temporales, así que no ensucian `reports/`.
 
