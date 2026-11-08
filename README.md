@@ -160,17 +160,17 @@ Las métricas se registraron con **LangSmith**:
 - **MRR (*Mean Reciprocal Rank*):** promedio del inverso de la posición de la técnica de referencia en el ranking (0 si no aparece).
 - **Latencia promedio:** tiempo medio de respuesta del retrieval por consulta.
 
-| Modelo / Sistema | Tipo / Proveedor | Muestras | Hit@5 | MRR | Latencia prom. |
-| :--- | :--- | :---: | :---: | :---: | :---: |
-| **Gemini embedding-001** | Semántico / Google Cloud | 31 | **67.74 %** | **0.4866** | 636.4 ms |
-| **Qwen3 embedding-0.6b** | Semántico / Cloudflare Workers AI | 31 | **54.84 %** | **0.3989** | 2012.0 ms |
-| **BGE-Large-EN-v1.5** | Semántico / Cloudflare Workers AI | 31 | **51.61 %** | **0.3505** | 651.7 ms |
-| **Plamo embedding-1b** | Semántico / Cloudflare Workers AI | 14* | **50.00 %** | **0.3952** | 748.9 ms |
-| **Baseline (TF-IDF)** | Léxico tradicional / algorítmico | 31 | **32.26 %** | **0.2769** | **6.8 ms** |
+| Modelo / Sistema | Tipo / Proveedor | Muestras | Hit@5 | IC 95 % (Hit@5) | MRR | Latencia prom. |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| **Gemini embedding-001** | Semántico / Google Cloud | 31 | **67.74 %** | **[51.29 %, 84.20 %]** | **0.4866** | 636.4 ms |
+| **Qwen3 embedding-0.6b** | Semántico / Cloudflare Workers AI | 31 | **54.84 %** | [37.32 %, 72.36 %] | **0.3989** | 2012.0 ms |
+| **BGE-Large-EN-v1.5** | Semántico / Cloudflare Workers AI | 31 | **51.61 %** | [34.02 %, 69.20 %] | **0.3505** | 651.7 ms |
+| **Baseline (TF-IDF)** | Léxico tradicional / algorítmico | 31 | **32.26 %** | [15.80 %, 48.71 %] | **0.2769** | **6.8 ms** |
 
-\*Plamo procesó 14 de las 31 alertas antes de que se interrumpiera el experimento; es un modelo orientado principalmente al japonés.
 
-**Lectura de los resultados:** el mejor modelo semántico (Gemini embedding-001) mejora el baseline léxico TF-IDF en **+35.48 puntos porcentuales de Hit@5** y casi duplica el MRR (0.4866 vs. 0.2769). El costo es la latencia: 636.4 ms frente a 6.8 ms del baseline.
+**Intervalos de confianza y alcance del experimento:** cada modelo se evaluó en **una sola corrida**, sin repeticiones. El dataset tiene **31 alertas que cubren 17 técnicas MITRE distintas** (25 reglas únicas), por lo que los números son frágiles. El IC del 95 % se calculó con la aproximación normal (Wald): `p ± 1.96·sqrt(p(1−p)/n)`, donde `p` es el Hit@5 observado y `n` la cantidad de alertas evaluadas (31, o 14 en Plamo). Por eso el IC de Gemini va de **51.29 % a 84.20 %** (redondeado, 52 %–84 %) y se superpone con los de Qwen3 y BGE: la ventaja observada es **indicativa**, no concluyente. **Ampliar el dataset es la mejora prioritaria**; con más alertas y más técnicas los intervalos se angostan y la comparación gana robustez.
+
+**Lectura de los resultados:** el mejor modelo semántico (Gemini embedding-001) mejora el baseline léxico TF-IDF en **+35.48 puntos porcentuales de Hit@5** y casi duplica el MRR (0.4866 vs. 0.2769). El costo es la latencia: 636.4 ms frente a 6.8 ms del baseline. La diferencia contra TF-IDF es la más clara (los intervalos no se solapan), mientras que entre los modelos semánticos el orden debe tomarse como tendencia.
 
 **Limitaciones de la anotación:** al ser un ground truth de etiqueta única, los valores de la tabla son conservadores. En las dos filas con técnica alternativa (554 → T1565.001; 80781 → T1098), las corridas registradas no devolvieron esas alternativas en el Top 5, así que los números no cambian; si en el futuro se aceptaran, el Hit@5 solo podría subir. Además, una de las 31 filas (80783) usa una técnica inferida: un cambio en esa anotación movería el Hit@5 como máximo 3.2 puntos porcentuales (1/31) y el MRR hasta 0.032, y el efecto exacto depende del modelo.
 
@@ -499,6 +499,7 @@ El target se valida con `_validate_target` y los flags con la misma allowlist qu
 - [x] **Tests automáticos:** suite de `pytest` en [`tests/test_nmap.py`](tests/test_nmap.py) y [`tests/test_pdf.py`](tests/test_pdf.py) sobre la allowlist de Nmap (scripts, inyecciones, flags peligrosos) y la generación de PDFs. Ver [Tests](#-tests).
 
 ### Mejoras propuestas para futuros proyectos
+- [ ] **Ampliación del dataset de evaluación:** sumar más alertas de Wazuh y cubrir más técnicas MITRE (hoy son 31 alertas y 17 técnicas distintas). Con un dataset ampliado se repetirá la comparación entre modelos y se recalcularán los intervalos de confianza del 95 % para reducir la fragilidad de los resultados.
 - [ ] **Ground truth multi-etiqueta:** registrar todas las técnicas MITRE válidas por alerta y adaptar `mitre_retrieval_evaluator` para aceptar cualquiera de ellas; hoy las alternativas están en `notes` pero no se acreditan.
 - [ ] **Evaluación de generación LLM:** medición de *Fidelidad (Faithfulness)* y *Relevancia de la Respuesta (Answer Relevance)* utilizando [Ragas](https://docs.ragas.io/) integrado con [LangSmith](https://www.langchain.com/langsmith).
 - [ ] **Contrastación con otras verticales de ciberseguridad:** integración y mapeo a marcos complementarios como **MITRE D3FEND** (contramedidas defensivas), **ATT&CK for Cloud**, **ATT&CK for Mobile** y **ATT&CK for ICS**, permitiendo contrastar hallazgos entre diferentes dominios y enriquecer el razonamiento del agente.

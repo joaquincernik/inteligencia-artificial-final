@@ -133,6 +133,8 @@
             <span><span class="font-mono font-medium text-fg">31</span> alertas evaluadas</span>
             <span class="hidden h-3.5 w-px bg-line sm:block" aria-hidden="true"></span>
             <span><span class="font-mono font-medium text-fg">67.74 %</span> Hit@5</span>
+            <span class="hidden h-3.5 w-px bg-line sm:block" aria-hidden="true"></span>
+            <span><span class="font-mono font-medium text-fg">51.29–84.20 %</span> IC 95 %</span>
           </div>
 
           <p class="mt-5 font-mono text-[11px] text-faint">Python 3.10+ · MIT · LangGraph + LangChain</p>
@@ -741,8 +743,10 @@
           <h2 class="section-title">Retrieval medido sobre alertas reales</h2>
           <p class="lead">
             Se evaluó el módulo de recuperación sobre <strong>31 alertas reales de Wazuh</strong>
-            anotadas con su técnica MITRE ATT&amp;CK correcta. Cada sistema debía devolver las
-            5 técnicas más probables para cada alerta.
+            (25 reglas únicas) mapeadas a <strong>17 técnicas MITRE ATT&amp;CK distintas</strong> a partir
+            de las propias reglas de Wazuh. Cada sistema debía devolver las 5 técnicas más probables
+            para cada alerta. Cada modelo se evaluó en <strong>una sola corrida</strong>: por el tamaño
+            muestral, los resultados son frágiles y se reportan con su intervalo de confianza del 95 %.
           </p>
         </div>
 
@@ -750,7 +754,7 @@
           <div class="card p-5">
             <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-faint">Hit@5</p>
             <p class="mt-2 font-mono text-4xl font-semibold tracking-tight text-accent">67.74<span class="text-xl text-accent/70"> %</span></p>
-            <p class="mt-1.5 text-xs text-muted">Gemini embedding-001</p>
+            <p class="mt-1.5 text-xs text-muted">Gemini embedding-001 · IC 95 % [51.29, 84.20]</p>
           </div>
           <div class="card p-5">
             <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-faint">MRR</p>
@@ -766,7 +770,7 @@
 
         <div class="card mt-6 overflow-hidden" data-reveal>
           <div class="overflow-x-auto">
-            <table class="results-table w-full min-w-[760px] text-left">
+            <table class="results-table w-full min-w-[860px] text-left">
               <caption class="sr-only">Comparativa de modelos de embeddings y baseline TF-IDF</caption>
               <thead>
                 <tr>
@@ -774,6 +778,7 @@
                   <th scope="col">Tipo / Proveedor</th>
                   <th scope="col" class="text-center">Muestras</th>
                   <th scope="col" class="text-center">Hit@5</th>
+                  <th scope="col" class="text-center">IC 95 %</th>
                   <th scope="col" class="text-center">MRR</th>
                   <th scope="col" class="text-right">Latencia prom.</th>
                 </tr>
@@ -789,6 +794,7 @@
                   <td>Semántico / Google Cloud</td>
                   <td class="text-center font-mono">31</td>
                   <td class="text-center font-mono font-semibold text-accent">67.74 %</td>
+                  <td class="text-center font-mono font-semibold text-accent">[51.29, 84.20]</td>
                   <td class="text-center font-mono font-semibold">0.4866</td>
                   <td class="text-right font-mono">636.4 ms</td>
                 </tr>
@@ -797,6 +803,7 @@
                   <td>Semántico / Cloudflare Workers AI</td>
                   <td class="text-center font-mono">31</td>
                   <td class="text-center font-mono">54.84 %</td>
+                  <td class="text-center font-mono">[37.32, 72.36]</td>
                   <td class="text-center font-mono">0.3989</td>
                   <td class="text-right font-mono">2012.0 ms</td>
                 </tr>
@@ -805,14 +812,15 @@
                   <td>Semántico / Cloudflare Workers AI</td>
                   <td class="text-center font-mono">31</td>
                   <td class="text-center font-mono">51.61 %</td>
+                  <td class="text-center font-mono">[34.02, 69.20]</td>
                   <td class="text-center font-mono">0.3505</td>
                   <td class="text-right font-mono">651.7 ms</td>
                 </tr>
                 <tr>
-                  <td>Plamo embedding-1b</td>
                   <td>Semántico / Cloudflare Workers AI</td>
                   <td class="text-center font-mono">14*</td>
                   <td class="text-center font-mono">50.00 %</td>
+                  <td class="text-center font-mono">[23.81, 76.19]</td>
                   <td class="text-center font-mono">0.3952</td>
                   <td class="text-right font-mono">748.9 ms</td>
                 </tr>
@@ -821,6 +829,7 @@
                   <td>Léxico tradicional / algorítmico</td>
                   <td class="text-center font-mono">31</td>
                   <td class="text-center font-mono">32.26 %</td>
+                  <td class="text-center font-mono">[15.80, 48.71]</td>
                   <td class="text-center font-mono">0.2769</td>
                   <td class="text-right font-mono font-semibold text-fg">6.8 ms</td>
                 </tr>
@@ -829,9 +838,13 @@
           </div>
         </div>
 
-        <p class="mt-3 text-xs leading-relaxed text-faint">
-          *Plamo procesó 14 de las 31 alertas antes de que se interrumpiera el experimento;
-          es un modelo orientado principalmente al japonés.
+        
+        <p class="mt-2 text-xs leading-relaxed text-faint">
+          IC 95 % calculado con la aproximación normal (Wald): p ± 1.96·√(p(1−p)/n), con n = 31
+          (31 alertas). Cada modelo se evaluó en una sola corrida y el dataset cubre 17 técnicas
+          distintas, por lo que los intervalos son anchos: la ventaja de Gemini sobre Qwen3 y BGE
+          es indicativa, no concluyente. La diferencia frente a TF-IDF sí es clara (los intervalos
+          no se solapan). Ampliar el dataset es la mejora prioritaria.
         </p>
 
         <figure class="mt-8" data-reveal>
