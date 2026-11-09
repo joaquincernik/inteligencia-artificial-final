@@ -1,0 +1,89 @@
+inputs.rule.description,outputs.tecnicas_recuperadas,error,reference.mitre_id,feedback.hit@5,feedback.mrr,execution_time,example_id,id
+A web attack returned code 200 (success).,"['T1204', 'T1102.002', 'T1696.001', 'T1204.004', 'T1189']",,T1190,0.0,0.0,0.620229,ca30bbc9-ed86-46f8-a6b3-9248c4d7efd6,01a1beab-3da4-7c22-aa31-ada72a78eec2
+Multiple web server 400 error codes from same source ip.,"['T1110.004', 'T1110.003', 'T1499.002', 'T1499', 'T1498']",,T1190,0.0,0.0,0.623984,c383b456-3aa9-426a-9f41-b8f8932256ac,01a1beab-4014-7679-8f58-fe1f1cbb17be
+Web server 400 error code.,"['T1187', 'T1553.005', 'T1499.002', 'T1110.004', 'T1110.003']",,T1190,0.0,0.0,0.47711,cbad7341-506a-48b5-9bd6-c9c239f6db2c,01a1beab-4285-715e-895b-8097c96136b6
+XSS (Cross Site Scripting) attempt.,"['T1608.005', 'T1696.002', 'T1204', 'T1204.004', 'T1220']",,T1190,0.0,0.0,0.745993,3e23e526-fc06-44df-b0b9-2341d34d7de9,01a1beab-4464-7950-b242-3a718984ae68
+Multiple SQL injection attempts from same source ip.,"['T1110.003', 'T1110.004', 'T1583.001', 'T1499.002', 'T1204']",,T1190,0.0,0.0,0.716959,b5c75c12-6542-4c21-a72b-31d721e7b8fc,01a1beab-474f-7d99-9d32-2668a361a20b
+SQL injection attempt.,"['T1505.001', 'T1213.006', 'T1696.002', 'T1003.002', 'T1110.003']",,T1190,0.0,0.0,0.50801,9e6f7a5f-2e36-448c-8b2e-01f525a27b6e,01a1beab-4a1e-73b3-8dfd-70086b55b7ba
+Information from the user was changed.,"['T1589', 'T1033', 'T1217', 'T1592.004', 'T1565.002']",,T1098,0.0,0.0,0.741849,94df0596-50da-451b-bd8c-a4f12eab1584,01a1beab-4c1b-7b22-a104-2cebe4b6588b
+Unauthorized user attempted to use sudo.,"['T1548.003', 'T1548.001', 'T1548.002', 'T1098.007', 'T1068']",,T1548.003,1.0,1.0,0.599917,e6701668-dd4b-49b1-a9a8-949195ccab17,01a1beab-4f02-7290-aba8-e828c236dfb2
+syslog: User missed the password more than one time,"['T1110.001', 'T1110.003', 'T1056.001', 'T1110.004', 'T1621']",,T1110.001,1.0,1.0,0.435011,4fca03dd-a930-43cd-96de-d864739ff551,01a1beab-515c-747d-8ac8-2c9e9d62bf46
+PAM: Multiple failed logins in a small period of time.,"['T1621', 'T1110.004', 'T1110.003', 'T1212', 'T1078']",,T1110.001,0.0,0.0,0.621336,b2ed6862-a4c2-4533-ab78-f6c3ea348a55,01a1beab-5310-7908-af4f-f4bc58177b31
+PAM: User login failed.,"['T1556.003', 'T1556', 'T1621', 'T1110.003', 'T1110.004']",,T1110.001,0.0,0.0,0.62835,799c429b-9b79-40d9-a641-8101ef7761b1,01a1beab-557f-7bc1-a356-efb25b561bde
+sshd: brute force trying to get access to the system. Non existent user.,"['T1021.004', 'T1563.001', 'T1531', 'T1110.001', 'T1110']",,T1110.001,1.0,0.25,1.16564,152ca3ab-2042-4c82-a1a7-0d7a3db874fb,01a1beab-57f5-705e-af35-53ceaa631506
+sshd: brute force trying to get access to the system. Authentication failed.,"['T1021.004', 'T1563.001', 'T1110.003', 'T1110', 'T1110.001']",,T1110.001,1.0,0.2,0.509482,e3ff792d-9ae7-4acd-858d-9d594df3d1de,01a1beab-5c84-793d-8e71-d2b97e934a1c
+Integrity checksum changed again (2nd time).,"['T1036.008', 'T1546.011', 'T1027.001', 'T1110.004', 'T1055.013']",,T1565.001,0.0,0.0,0.613606,27f31bc0-1b7a-41d9-8f90-09602d32f5f2,01a1beab-5e83-7994-b6fc-6ffbdcea6794
+Audit: Deleted: /etc/systemd/system/.,"['T1543.002', 'T1685.004', 'T1685.006', 'T1070.003', 'T1070.004']",,T1070.004,1.0,0.2,0.560515,d515fb77-7aac-4e9e-a911-a4c16a332f88,01a1beab-60eb-7a86-926d-db5b6d7e1149
+Audit: Deleted: /etc/cron.d/.,"['T1053.003', 'T1685.004', 'T1685.006', 'T1070.004', 'T1070.003']",,T1070.004,1.0,0.25,0.751741,a9792c2f-5d8f-48bb-91f8-feaa62c0eb1e,01a1beab-631d-708f-8c71-c8e8476245ca
+Audit: Created: /tmp/.,"['T1070.004', 'T1560.001', 'T1070.006', 'T1685.004', 'T1003.001']",,T1105,0.0,0.0,0.70706,6bd21fff-8816-4e0b-9dd3-b9887bcfc1fb,01a1beab-660e-7263-88bf-aa89841567d3
+Audit: Created: /etc/.,"['T1685.004', 'T1070.004', 'T1564.012', 'T1560.001', 'T1567.003']",,T1565.001,0.0,0.0,0.448854,cc5aedbe-18b9-4854-a8a2-edc0eefcccea,01a1beab-68d3-7b42-a3d8-8155bbaa3e6a
+Audit: Created: /etc/systemd/system/.,"['T1543.002', 'T1685.004', 'T1497.001', 'T1053.006', 'T1569.003']",,T1543.002,1.0,1.0,0.613351,9cc15f9e-2233-4163-bee1-d636044aecfb,01a1beab-6a95-72ad-b158-705440c3742f
+Audit: Created: /etc/cron.d/.,"['T1053.003', 'T1685.004', 'T1053.006', 'T1685.006', 'T1053.002']",,T1053.003,1.0,1.0,0.480448,350f5de3-7a47-4711-a3fa-54480332d054,01a1beab-6cfc-7e99-899c-2476a7094e6c
+Audit: Watch - Write access: /root/.bash_history.,"['T1552.003', 'T1690', 'T1070.003', 'T1685.004', 'T1070']",,T1070.003,1.0,0.3333333333333333,0.513797,e6a0d8b8-c8b1-46ae-b1da-5716de078fca,01a1beab-6ede-7ceb-b567-74c2b53092ed
+Audit: Watch - Write access: /etc/sudoers.,"['T1548.003', 'T1685.004', 'T1484.001', 'T1497.002', 'T1003.001']",,T1548.003,1.0,1.0,0.76076,d63222a3-fa64-4a9c-b825-9cb73428a8f8,01a1beab-70e1-76da-94b4-5c94d05cb3fc
+Audit: Watch - Write access: /etc/group.,"['T1685.004', 'T1484.001', 'T1222.002', 'T1069.002', 'T1615']",,T1098.007,0.0,0.0,0.685952,8db6f2d5-a614-4d69-8769-dc707f2af222,01a1beab-73dc-7abd-a963-05344ff134eb
+Audit: Watch - Write access: /etc/shadow.,"['T1685.004', 'T1006', 'T1685.002', 'T1497.002', 'T1564.012']",,T1136.001,0.0,0.0,0.672811,03c016c0-7c8e-4cd7-9957-b5f5b51f8ee2,01a1beab-768b-7d5f-87cf-99f9b9f0a880
+Audit: Watch - Read access: /etc/passwd.,"['T1003.008', 'T1003.005', 'T1003.006', 'T1685.004', 'T1556.005']",,T1087.001,0.0,0.0,0.677832,08c6c264-4c5b-470c-bb19-9b6a77b5c86a,01a1beab-792e-74ac-ba35-3165dc4d9e06
+Audit: Command: /usr/bin/rm.,"['T1070.004', 'T1685.004', 'T1070.003', 'T1690', 'T1074.001']",,T1070.004,1.0,1.0,0.762063,cf55259c-ebd5-4d7e-92af-1d397a20f644,01a1beab-7bd5-767c-9885-c65762d7e809
+Audit: Command: /usr/bin/python3.,"['T1685.004', 'T1690', 'T1070.003', 'T1560.001', 'T1070.008']",,T1059.006,0.0,0.0,0.667097,532e05fe-3295-44c2-8b45-63a376a3cd2c,01a1beab-7ed1-78c6-a9b3-5ab7e0ab567e
+Audit: Command: /usr/bin/base64.,"['T1560.001', 'T1105', 'T1140', 'T1690', 'T1027.010']",,T1027,0.0,0.0,0.441483,9995d8b1-8ce7-4da6-add4-a8a763ba57f2,01a1beab-816d-73f4-8679-5fad7e2ec9c9
+Audit: Command: /usr/bin/curl.,"['T1105', 'T1048', 'T1560.001', 'T1685.004', 'T1070.003']",,T1105,1.0,1.0,0.757926,d6a492ad-321d-4503-b1d1-c3415121a12b,01a1beab-8328-7f8a-905c-f9ba709bd9db
+Audit: Command: /usr/bin/wget.,"['T1105', 'T1560.001', 'T1070.003', 'T1048', 'T1070.004']",,T1105,1.0,1.0,0.46932,c08dfeb1-ee5d-4c8d-a66d-f3847d81f13f,01a1beab-861f-70d7-aa95-c247eee44ae5
+Audit: Command: /usr/bin/chmod.,"['T1690', 'T1685.004', 'T1222.002', 'T1070.003', 'T1548.001']",,T1222.002,1.0,0.3333333333333333,1.062126,5e1f973e-0b3c-4e21-8b3d-ed6db54696f4,01a1beab-87f6-7824-947a-69470c0ac204
+Audit: Command: /usr/bin/sudo.,"['T1548.003', 'T1685.004', 'T1690', 'T1070.003', 'T1548.001']",,T1548.003,1.0,1.0,0.794294,c94ad32c-cdb6-4c30-839f-c86d35ca780d,01a1beab-8c1e-756a-95eb-a416bc6b6a3f
+Audit: Command: /usr/sbin/userdel.,"['T1685.004', 'T1070.003', 'T1087.001', 'T1033', 'T1690']",,T1531,0.0,0.0,0.524226,9f7b5841-c5fe-43eb-9c24-e8bd522e2129,01a1beab-8f39-757a-9250-4014c61e877c
+Audit: Command: /usr/sbin/usermod.,"['T1685.004', 'T1033', 'T1497.002', 'T1564.002', 'T1690']",,T1098,0.0,0.0,0.724369,f84c103d-4f1c-46c9-b240-d26be0c468bb,01a1beab-9147-7e55-b3bc-7a06928104d6
+Audit: Command: /usr/sbin/useradd.,"['T1685.004', 'T1548.002', 'T1497.002', 'T1531', 'T1033']",,T1136.001,0.0,0.0,0.609935,dea7a8fc-581b-441d-bcc8-553d45026b6b,01a1beab-941d-7910-b60b-f49886f3e48c
+Audit: Command: /usr/bin/rpm.,"['T1685.004', 'T1690', 'T1560.001', 'T1070.003', 'T1518.002']",,T1518,0.0,0.0,0.679565,3694af1e-2ac1-442c-a464-1510995ffaae,01a1beab-9680-7f71-9329-78f26ef1f035
+Audit: Command: /usr/bin/nc.,"['T1070.003', 'T1690', 'T1685.004', 'T1070.004', 'T1552.003']",,T1046,0.0,0.0,0.482363,0c0d4c14-d9fe-4355-bc5b-fa44a932de18,01a1beab-9929-74c0-b28a-b01352290499
+Audit: Command: /usr/bin/ip.,"['T1595.001', 'T1016', 'T1590.005', 'T1685.004', 'T1048']",,T1016,1.0,0.5,0.459182,7f86066a-d2fb-45ea-b2af-2b329edee7b5,01a1beab-9b0d-75de-80f4-e6adca71b558
+Audit: Command: /usr/bin/ss.,"['T1690', 'T1685.004', 'T1003.001', 'T1074.001', 'T1070.003']",,T1049,0.0,0.0,0.469086,aee15cbd-1aba-4795-90f8-62c10e2082ee,01a1beab-9cd9-7361-bc87-1a4ad6d44844
+Audit: Command: /usr/bin/getent.,"['T1560.001', 'T1105', 'T1070.004', 'T1003.002', 'T1005']",,T1087.001,0.0,0.0,0.509766,b0139fc5-89a0-4383-ae71-673f25705293,01a1beab-9eb0-7bac-8a33-88a713b0b2d9
+Audit: Command: /usr/bin/id.,"['T1685.004', 'T1218.012', 'T1070.003', 'T1070', 'T1690']",,T1033,0.0,0.0,0.764702,c362563b-40a8-487f-ade6-40546794cc1c,01a1beab-a0af-727e-87e4-378164da443e
+Audit: Command: /usr/bin/whoami.,"['T1033', 'T1690', 'T1070.004', 'T1685.004', 'T1218.014']",,T1033,1.0,1.0,0.622684,46a42813-35a2-4234-b31f-b466f25c3bba,01a1beab-a3ad-71d7-b53d-6fd538c951c8
+Audit: Command: /usr/bin/kmod.,"['T1685.004', 'T1690', 'T1070.003', 'T1074.001', 'T1560.001']",,T1547.006,0.0,0.0,0.716983,f0db8802-8658-45be-a800-22955da50c88,01a1beab-a61d-7124-aad5-1fbaa907878d
+Audit: Command: /usr/bin/dpkg.,"['T1560.001', 'T1518.002', 'T1685.004', 'T1218', 'T1070.008']",,T1518,0.0,0.0,0.715579,972492ae-7910-45a1-9e85-548712a0f30f,01a1beab-a8ec-7ca9-a4af-9b949bae1c3e
+Audit: Command: /usr/bin/systemctl.,"['T1685.004', 'T1569.003', 'T1497.001', 'T1007', 'T1070.003']",,T1007,1.0,0.25,0.816289,8f94fde5-3202-4ea5-9969-dc301bffd953,01a1beab-abb9-740e-b0fc-7c7e158f850f
+Audit: Command: /usr/bin/tar.,"['T1685.004', 'T1560.001', 'T1070.003', 'T1690', 'T1070.004']",,T1560.001,1.0,0.5,0.636294,8c142811-698e-4dca-b798-34c701a63ba3,01a1beab-aeea-71f8-8232-a3380e2d36c8
+Audit: Command: /usr/bin/netstat.,"['T1690', 'T1070.003', 'T1685.004', 'T1016.001', 'T1087.001']",,T1049,0.0,0.0,0.45484,dc671acd-b205-4277-af2e-0247805d9465,01a1beab-b168-7c41-90a1-0815040af5d9
+Audit: Command: /usr/bin/last.,"['T1070.003', 'T1552.003', 'T1690', 'T1070.004', 'T1074.001']",,T1033,0.0,0.0,0.615945,f99b41a7-3a94-488c-8451-f038d4e925f6,01a1beab-b331-783c-8501-b4f50c01c7a5
+Audit: Command: /usr/bin/uname.,"['T1070.004', 'T1497.001', 'T1690', 'T1070.003', 'T1070.008']",,T1082,0.0,0.0,0.718394,f5874b9f-4809-44b6-bf05-cc6579b0caf8,01a1beab-b59a-700f-8638-fec7e67e10c3
+Audit: Command: /usr/bin/findmnt.,"['T1518.002', 'T1005', 'T1497.001', 'T1083', 'T1680']",,T1082,0.0,0.0,0.458945,e86dab11-c39d-4d0c-8e53-6a3b17c79b2d,01a1beab-b86a-714b-95c6-fff29046479a
+Audit: Command: /usr/bin/df.,"['T1685.004', 'T1690', 'T1074.001', 'T1070.003', 'T1560.001']",,T1082,0.0,0.0,0.6069,d6736606-ca5c-4bba-8d98-d3790890c012,01a1beab-ba37-78af-94c7-b4d978385c7e
+Audit: Command: /usr/bin/stat.,"['T1685.004', 'T1690', 'T1070.003', 'T1552.003', 'T1074.001']",,T1083,0.0,0.0,0.541286,2cb081ab-a45b-4906-9d06-abf46f7e967c,01a1beab-bc97-7c6f-a901-cc290ccd2a16
+Audit: Command: /usr/bin/ls.,"['T1685.004', 'T1003.001', 'T1690', 'T1070.003', 'T1074.001']",,T1083,0.0,0.0,0.768274,eb7c8145-2ba8-4304-9d7f-ae8361f41172,01a1beab-beb6-7d55-8867-893c8a0ae12b
+Audit: Command: /usr/bin/find.,"['T1518.002', 'T1083', 'T1005', 'T1518.001', 'T1680']",,T1083,1.0,0.5,0.601246,5f911dff-ba01-4269-ac88-f96886a73528,01a1beab-c1b9-7185-b4c5-fb20a9b90e63
+Audit: Command: /usr/bin/ssh.,"['T1021.004', 'T1563.001', 'T1070.003', 'T1690', 'T1048']",,T1021.004,1.0,1.0,0.7217,e656b4c8-ff4b-4c25-9c38-2db02b3b34d2,01a1beab-c414-7051-bd13-d5def67058eb
+Audit: Command: /usr/bin/dash.,"['T1070.003', 'T1690', 'T1070.004', 'T1552.003', 'T1685.004']",,T1059.004,0.0,0.0,0.706058,18aef82b-0913-468d-ad51-b5ae93761b63,01a1beab-c6e7-7fdc-99a7-d0721197cb87
+Audit: Command: /usr/bin/bash.,"['T1070.003', 'T1685.004', 'T1690', 'T1552.003', 'T1074.001']",,T1059.004,0.0,0.0,0.763615,39200c4c-93b7-42f6-a2af-093ce47b477f,01a1beab-c9ab-7cdb-9aac-362b8b12ecef
+sshd: authentication failed.,"['T1021.004', 'T1563.001', 'T1110.004', 'T1110.003', 'T1098.004']",,T1110.001,0.0,0.0,0.45187,630966a6-7669-42ee-8170-040072c5b8bc,01a1beab-cca8-790c-b00c-f3dcb6fdc9fe
+First time user executed sudo.,"['T1548.003', 'T1548.001', 'T1546.004', 'T1574.005', 'T1204']",,T1548.003,1.0,1.0,0.555426,33597d60-854c-4ba4-ba6c-a8e7ac0c4a94,01a1beab-ce6d-71be-a1af-31c5004696c7
+User missed the password to change UID (user id).,"['T1564.002', 'T1003.008', 'T1556.005', 'T1003.005', 'T1548.002']",,T1110.001,0.0,0.0,0.729802,ad2bfdc3-ad11-44bd-8872-c85806cc9178,01a1beab-d09a-72aa-98b0-cdb3ab2683f7
+Common web attack.,"['T1608.005', 'T1696.002', 'T1584.006', 'T1608.007', 'T1659']",,T1190,0.0,0.0,0.448208,bf5f1a4b-5e30-406a-9b7e-644d06023445,01a1beab-d375-7366-9851-1e4dbb76fcc0
+ModSecurity: Access attempt blocked.,"['T1556.006', 'T1531', 'T1556.001', 'T1556', 'T1110.003']",,T1190,0.0,0.0,0.562612,1da216b6-b8bb-4a5b-a7fe-6a0ae284799f,01a1beab-d538-7ef8-a123-dcc82ff9ed96
+Processes running for all users were queried with ps command.,"['T1057', 'T1552.003', 'T1059.001', 'T1202', 'T1543']",,T1057,1.0,1.0,0.6879,7f1d37ea-97a3-4746-84bb-899b5fb06719,01a1beab-d76c-70d5-8364-37046642257e
+Audit: Created: /etc/systemd/system/wazuh_test.service.,"['T1543.002', 'T1685.004', 'T1543.003', 'T1007', 'T1053.006']",,T1543.002,1.0,1.0,0.456246,71c69115-04cb-48d4-930c-636e4382c1e7,01a1beab-da1e-795b-94dc-5f24e25a4a74
+Audit: Created: /etc/cron.d/wazuh_test.,"['T1053.003', 'T1685.004', 'T1053.006', 'T1053.002', 'T1497.003']",,T1053.003,1.0,1.0,0.441795,107eb8e5-cb84-4bb1-8991-cc22798296e1,01a1beab-dbe8-7899-b607-a1a45293bceb
+sshd: Attempt to login using a non-existent user,"['T1021.004', 'T1563.001', 'T1110.001', 'T1098.004', 'T1550.002']",,T1110.001,1.0,0.3333333333333333,0.540613,2fbfe8de-61f1-4859-94d1-cffe50e6d010,01a1beab-dda3-7b1d-b697-9c3f4f5bec01
+Possible kernel level rootkit,"['T1014', 'T1547.006', 'T1542.003', 'T1497', 'T1652']",,T1014,1.0,1.0,0.482234,f03c8f2a-f4ce-4308-af49-005586ca2ce7,01a1beab-dfc0-7d05-8a0a-5c0858c0e0d5
+Audit: Watch - Write access: /root/.bashrc.,"['T1685.004', 'T1690', 'T1552.003', 'T1070.003', 'T1074.001']",,T1546.004,0.0,0.0,0.838207,6a2b3f72-2c44-47de-a3b9-3e983b657dac,01a1beab-e1a5-7aee-8d4d-9e4b9e4a8511
+Audit: Watch - Write access: /etc/passwd.,"['T1685.004', 'T1003.008', 'T1003.006', 'T1531', 'T1556.001']",,T1136.001,0.0,0.0,0.587284,ab6176a9-0fdb-4edc-8f53-b6d581d0d8c0,01a1beab-e4ed-798d-975e-ef5abf1a6b30
+Wazuh agent stopped.,"['T1564.011', 'T1505.002', 'T1489', 'T1003.002', 'T1685']",,T1562.001,0.0,0.0,0.685801,0eee98e2-bf47-45e8-a592-067914591443,01a1beab-e739-72e4-8964-6df7050d2884
+Group (or user) deleted from the system.,"['T1098.007', 'T1531', 'T1087.002', 'T1069.001', 'T1070.004']",,T1531,1.0,0.5,0.458039,8cca6c24-156f-4db2-a6e3-4d830251f292,01a1beab-e9e9-78c0-b37f-ccf764c8898e
+New user added to the system.,"['T1033', 'T1136.001', 'T1564.002', 'T1098.005', 'T1547.014']",,T1136.001,1.0,0.5,0.726458,fdb123b0-472e-4bf7-a3b5-69c27d5a0476,01a1beab-ebb4-759b-aa59-8ea63a58e62b
+New group added to the system.,"['T1098.007', 'T1069.001', 'T1069', 'T1098.006', 'T1615']",,T1136.001,0.0,0.0,0.599291,0fdfc38e-8830-4fc9-881b-1d3a3d77b6fa,01a1beab-ee8d-7bb3-a066-730c3165e9f1
+Audit: Deleted: /tmp/.,"['T1070.004', 'T1070', 'T1485', 'T1070.008', 'T1564.012']",,T1070.004,1.0,1.0,0.614474,7ad73987-43e3-41d0-b195-ebc3dd4bbf27,01a1beab-f0e6-7db1-bb85-5a1f5d99a345
+Audit: Deleted: /etc/systemd/system/wazuh_test.service.,"['T1543.002', 'T1685.004', 'T1543.003', 'T1574.010', 'T1070.004']",,T1070.004,1.0,0.2,0.69429,3a607e52-31ee-4c60-831c-a07a91096cc2,01a1beab-f34f-7d4f-8167-a9b685ac4fbd
+Audit: Deleted: /etc/cron.d/wazuh_test.,"['T1685.004', 'T1053.003', 'T1685.006', 'T1070.004', 'T1070']",,T1070.004,1.0,0.25,0.669816,4e59c5b4-9653-4fd9-8920-97e93f2bc349,01a1beab-f606-7c4a-91e1-637bad406638
+Audit: Deleted: /etc/.,"['T1070.004', 'T1070', 'T1070.003', 'T1685.004', 'T1070.008']",,T1070.004,1.0,1.0,0.641937,001c2977-a861-4825-a4a6-92aef75982b5,01a1beab-f8a6-7e18-bfe8-806b04c9a369
+File added to the system.,"['T1546.001', 'T1036.008', 'T1601.001', 'T1036.006', 'T1204.002']",,T1105,0.0,0.0,0.671908,4644d8b8-5f04-45c0-8004-1b14a37442d9,01a1beab-fb2a-7336-82ad-61c130c618f0
+File deleted.,"['T1485', 'T1070.004', 'T1561.001', 'T1036.008', 'T1546.001']",,T1070.004,1.0,0.5,0.66932,45c4413b-d25e-4551-aca1-63c9580f113d,01a1beab-fdcb-7178-a2da-88f82c7277ed
+Auditd: Configuration changed.,"['T1685.004', 'T1685.001', 'T1685.002', 'T1685', 'T1592.004']",,T1562.012,0.0,0.0,0.620506,9e147ef3-f870-4608-a64c-c1ad8347cc4f,01a1beac-006a-7cf8-8779-5185b529e3ae
+Successful sudo to ROOT executed.,"['T1548.003', 'T1548.004', 'T1037.004', 'T1548.001', 'T1098.007']",,T1548.003,1.0,1.0,0.73509,6884145a-6f2b-4634-bddb-b2ab4fbc1868,01a1beac-02d8-777a-a62d-3c2c9499d937
+PAM: Login session closed.,"['T1547.007', 'T1556.003', 'T1556', 'T1547.015', 'T1037.002']",,T1078,0.0,0.0,0.70746,3f7165fa-eec1-4682-a7df-425bbac58419,01a1beac-05b9-74f4-b7f6-189c2e4b8ada
+PAM: Login session opened.,"['T1547.007', 'T1547.015', 'T1556.003', 'T1556', 'T1546.008']",,T1078,0.0,0.0,0.702314,114b3086-8777-4750-bd3d-4c1e47b40341,01a1beac-0880-79b7-a60b-be3795206521
+Audit: Watch - Read access.,"['T1497.002', 'T1685.004', 'T1006', 'T1212', 'T1497.001']",,T1003.008,0.0,0.0,0.484076,19760ac8-e2de-4c8d-a002-336e20aa5f10,01a1beac-0b41-717f-9ce1-c8c57e4e0c87
+Integrity checksum changed.,"['T1546.011', 'T1027.001', 'T1036.008', 'T1554', 'T1110.004']",,T1565.001,0.0,0.0,0.454096,57720345-66d2-432c-9939-acc0f6d1aaef,01a1beac-0d27-7884-91d8-6291856896c4
+Audit: Watch - Read access: shadow.,"['T1685.004', 'T1497.002', 'T1006', 'T1685.002', 'T1497.001']",,T1003.008,0.0,0.0,0.454279,88864eca-b459-4f52-9ab7-f0333ca1494c,01a1beac-0ef0-7db1-9e5e-5f4cf9ccd38e
+Audit: Watch - Read access: /etc/shadow.,"['T1685.004', 'T1497.002', 'T1006', 'T1003.008', 'T1685.002']",,T1003.008,1.0,0.25,0.616068,68c8f2bd-86c1-4e7d-a186-1a9407c0d013,01a1beac-10b8-7a5b-9586-ddbaa59b7f19
+Audit: Command: /usr/bin/ps.,"['T1552.003', 'T1685.004', 'T1057', 'T1059.001', 'T1074.001']",,T1057,1.0,0.3333333333333333,0.720682,60b388c1-8bbb-44fa-a155-65f1484b3cc2,01a1beac-1322-77c4-b0cc-c38658bf4d38

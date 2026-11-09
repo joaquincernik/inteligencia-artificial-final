@@ -1,0 +1,89 @@
+rule.description,mitre_id
+Audit: Command: /usr/bin/ps.,T1057
+Audit: Watch - Read access: /etc/shadow.,T1003.008
+Audit: Watch - Read access: shadow.,T1003.008
+Integrity checksum changed.,T1565.001
+Audit: Watch - Read access.,T1003.008
+PAM: Login session opened.,T1078
+PAM: Login session closed.,T1078
+Successful sudo to ROOT executed.,T1548.003
+Auditd: Configuration changed.,T1562.012
+File deleted.,T1070.004
+File added to the system.,T1105
+Audit: Deleted: /etc/.,T1070.004
+Audit: Deleted: /etc/cron.d/wazuh_test.,T1070.004
+Audit: Deleted: /etc/systemd/system/wazuh_test.service.,T1070.004
+Audit: Deleted: /tmp/.,T1070.004
+New group added to the system.,T1136.001
+New user added to the system.,T1136.001
+Group (or user) deleted from the system.,T1531
+Wazuh agent stopped.,T1562.001
+Audit: Watch - Write access: /etc/passwd.,T1136.001
+Audit: Watch - Write access: /root/.bashrc.,T1546.004
+Possible kernel level rootkit,T1014
+sshd: Attempt to login using a non-existent user,T1110.001
+Audit: Created: /etc/cron.d/wazuh_test.,T1053.003
+Audit: Created: /etc/systemd/system/wazuh_test.service.,T1543.002
+Processes running for all users were queried with ps command.,T1057
+ModSecurity: Access attempt blocked.,T1190
+Common web attack.,T1190
+User missed the password to change UID (user id).,T1110.001
+First time user executed sudo.,T1548.003
+sshd: authentication failed.,T1110.001
+Audit: Command: /usr/bin/bash.,T1059.004
+Audit: Command: /usr/bin/dash.,T1059.004
+Audit: Command: /usr/bin/ssh.,T1021.004
+Audit: Command: /usr/bin/find.,T1083
+Audit: Command: /usr/bin/ls.,T1083
+Audit: Command: /usr/bin/stat.,T1083
+Audit: Command: /usr/bin/df.,T1082
+Audit: Command: /usr/bin/findmnt.,T1082
+Audit: Command: /usr/bin/uname.,T1082
+Audit: Command: /usr/bin/last.,T1033
+Audit: Command: /usr/bin/netstat.,T1049
+Audit: Command: /usr/bin/tar.,T1560.001
+Audit: Command: /usr/bin/systemctl.,T1007
+Audit: Command: /usr/bin/dpkg.,T1518
+Audit: Command: /usr/bin/kmod.,T1547.006
+Audit: Command: /usr/bin/whoami.,T1033
+Audit: Command: /usr/bin/id.,T1033
+Audit: Command: /usr/bin/getent.,T1087.001
+Audit: Command: /usr/bin/ss.,T1049
+Audit: Command: /usr/bin/ip.,T1016
+Audit: Command: /usr/bin/nc.,T1046
+Audit: Command: /usr/bin/rpm.,T1518
+Audit: Command: /usr/sbin/useradd.,T1136.001
+Audit: Command: /usr/sbin/usermod.,T1098
+Audit: Command: /usr/sbin/userdel.,T1531
+Audit: Command: /usr/bin/sudo.,T1548.003
+Audit: Command: /usr/bin/chmod.,T1222.002
+Audit: Command: /usr/bin/wget.,T1105
+Audit: Command: /usr/bin/curl.,T1105
+Audit: Command: /usr/bin/base64.,T1027
+Audit: Command: /usr/bin/python3.,T1059.006
+Audit: Command: /usr/bin/rm.,T1070.004
+Audit: Watch - Read access: /etc/passwd.,T1087.001
+Audit: Watch - Write access: /etc/shadow.,T1136.001
+Audit: Watch - Write access: /etc/group.,T1098.007
+Audit: Watch - Write access: /etc/sudoers.,T1548.003
+Audit: Watch - Write access: /root/.bash_history.,T1070.003
+Audit: Created: /etc/cron.d/.,T1053.003
+Audit: Created: /etc/systemd/system/.,T1543.002
+Audit: Created: /etc/.,T1565.001
+Audit: Created: /tmp/.,T1105
+Audit: Deleted: /etc/cron.d/.,T1070.004
+Audit: Deleted: /etc/systemd/system/.,T1070.004
+Integrity checksum changed again (2nd time).,T1565.001
+sshd: brute force trying to get access to the system. Authentication failed.,T1110.001
+sshd: brute force trying to get access to the system. Non existent user.,T1110.001
+PAM: User login failed.,T1110.001
+PAM: Multiple failed logins in a small period of time.,T1110.001
+syslog: User missed the password more than one time,T1110.001
+Unauthorized user attempted to use sudo.,T1548.003
+Information from the user was changed.,T1098
+SQL injection attempt.,T1190
+Multiple SQL injection attempts from same source ip.,T1190
+XSS (Cross Site Scripting) attempt.,T1190
+Web server 400 error code.,T1190
+Multiple web server 400 error codes from same source ip.,T1190
+A web attack returned code 200 (success).,T1190
