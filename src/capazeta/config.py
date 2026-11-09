@@ -8,6 +8,11 @@ DEFAULT_MODEL_NAME = "google_genai:gemini-2.5-flash-lite"
 MODEL_NAME = (os.getenv("MODEL_NAME") or "").strip() or DEFAULT_MODEL_NAME
 THREAD_ID = os.getenv("THREAD_ID", "capazeta_thread")
 
+# Determinismo del LLM: temperatura 0 y semilla fija para que las corridas
+# sean lo más estables posible entre ejecuciones.
+LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0") or "0")
+LLM_SEED = int(os.getenv("LLM_SEED", "42") or "42")
+
 # Wazuh
 WAZUH_API_URL = os.getenv("WAZUH_API_URL", "https://localhost:55000").strip().rstrip("/")
 WAZUH_API_USER = os.getenv("WAZUH_API_USER", "wazuh").strip()

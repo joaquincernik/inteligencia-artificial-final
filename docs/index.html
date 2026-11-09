@@ -817,21 +817,13 @@
                   <td class="text-right font-mono">651.7 ms</td>
                 </tr>
                 <tr>
-                  <td>Semántico / Cloudflare Workers AI</td>
-                  <td class="text-center font-mono">14*</td>
-                  <td class="text-center font-mono">50.00 %</td>
-                  <td class="text-center font-mono">[23.81, 76.19]</td>
-                  <td class="text-center font-mono">0.3952</td>
-                  <td class="text-right font-mono">748.9 ms</td>
-                </tr>
-                <tr>
                   <td><strong class="text-muted">Baseline (TF-IDF)</strong></td>
                   <td>Léxico tradicional / algorítmico</td>
                   <td class="text-center font-mono">31</td>
                   <td class="text-center font-mono">32.26 %</td>
                   <td class="text-center font-mono">[15.80, 48.71]</td>
-                  <td class="text-center font-mono">0.2769</td>
-                  <td class="text-right font-mono font-semibold text-fg">6.8 ms</td>
+                  <td class="text-center font-mono">0.2258</td>
+                  <td class="text-right font-mono font-semibold text-fg">2.6 ms</td>
                 </tr>
               </tbody>
             </table>
@@ -844,7 +836,8 @@
           (31 alertas). Cada modelo se evaluó en una sola corrida y el dataset cubre 17 técnicas
           distintas, por lo que los intervalos son anchos: la ventaja de Gemini sobre Qwen3 y BGE
           es indicativa, no concluyente. La diferencia frente a TF-IDF sí es clara (los intervalos
-          no se solapan). Ampliar el dataset es la mejora prioritaria.
+          no se solapan). Plamo embedding-1b se excluyó de la comparación porque solo procesó
+          14 de las 31 alertas. Ampliar el dataset es la mejora prioritaria.
         </p>
 
         <figure class="mt-8" data-reveal>

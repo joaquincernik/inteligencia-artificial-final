@@ -6,7 +6,7 @@
 
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/status-MVP%20funcional-brightgreen.svg)]()
+[![Status](https://img.shields.io/badge/status-completado-brightgreen.svg)]()
 [![Tests](https://github.com/joaquincernik/inteligencia-artificial-final/actions/workflows/tests.yml/badge.svg)](https://github.com/joaquincernik/inteligencia-artificial-final/actions/workflows/tests.yml)
 
 </div>
@@ -118,6 +118,12 @@ Las consultas sobre inteligencias de amenazas y cobertura de eventos se resuelve
 
 Por defecto se usan embeddings de Gemini (`models/gemini-embedding-001`). También se puede usar Cloudflare Workers AI: configurá `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` y un `EMBEDDING_MODEL` con prefijo `@cf/` (por ejemplo `@cf/qwen/qwen3-embedding-0.6b`), y reconstruí el índice con `uv run python -m capazeta.rag.build`. El índice debe regenerarse porque cambia la dimensión de los vectores.
 
+**Técnicas vigentes:** tanto el índice FAISS como el baseline TF-IDF se construyen solo con técnicas **no deprecadas ni revocadas** de MITRE ATT&CK. El filtrado se hace con [`filter_mitre_techniques.py`](filter_mitre_techniques.py), que genera [`data/mitre/techniques_vigentes.json`](data/mitre/techniques_vigentes.json) (706 técnicas de 867). Así se excluyen IDs retirados como `T1062` (Hypervisor), `T1108` (Redundant Access) y `T1131` (Authentication Package). El detalle del procedimiento está en [`notebooks/06_mejoras_trabajo_final.ipynb`](notebooks/06_mejoras_trabajo_final.ipynb).
+
+### Reproducibilidad
+
+Las llamadas al LLM usan `temperature=0.0` y una semilla fija (`LLM_SEED=42`) para reducir la variabilidad entre ejecuciones. Ambos valores se pueden sobrescribir desde el `.env` con `LLM_TEMPERATURE` y `LLM_SEED`. La semilla se aplica en los proveedores que la exponen de forma nativa (Google Gemini y OpenAI) y se pasa como parámetro del modelo en Groq. El retrieval con FAISS y el baseline TF-IDF son deterministas. Aun así, las evaluaciones se reportan como una sola corrida sin repeticiones: la temperatura y la semilla reducen el ruido, pero no permiten separar la variabilidad del proveedor de la del dataset.
+
 ### Ground truth de la evaluación RAG
 
 El conjunto de evaluación tiene **31 alertas de Wazuh** (descripciones de alerta) provenientes de **25 reglas únicas**; una misma regla puede aparecer en varias filas cuando Wazuh emite descripciones distintas (por ejemplo, la regla 80791 aparece con cuatro rutas borradas). La anotación completa está en [`tests/wazuh_ground_truth_annoted.csv`](tests/wazuh_ground_truth_annoted.csv) y el subconjunto que consume LangSmith, en [`tests/dataset_evaluacion_langsmith.csv`](tests/dataset_evaluacion_langsmith.csv). El procedimiento de clasificación y evaluación está implementado en [`notebooks/02_evaluacion_rag.ipynb`](notebooks/02_evaluacion_rag.ipynb).
@@ -141,9 +147,9 @@ El conjunto de evaluación tiene **31 alertas de Wazuh** (descripciones de alert
 
 ## 📈 Resultados
 
-### Estado actual (MVP funcional)
+### Estado actual
 
-El sistema se encuentra en etapa de **MVP funcional**. Se validó cualitativamente la correcta ejecución de las siguientes funcionalidades:
+El sistema está implementado y validado de punta a punta: resuelve consultas de ciberseguridad con enrutamiento multi-agente, ejecuta herramientas reales, recupera técnicas MITRE mediante RAG y genera reportes. La validación combina pruebas cualitativas de las funcionalidades con evaluación cuantitativa del retrieval y de la generación LLM, además de una suite automática de tests.
 
 - **Enrutamiento multi-agente:** Clasificación correcta de las consultas hacia los 3 dominios de especialidad activos.
 - **Herramientas activas:** Escaneo de red con Nmap (destino, puertos y flags validados contra una lista blanca), consulta de agentes/eventos/alertas desde Wazuh API/Indexer y generación automatizada de reportes en Markdown y PDF.
@@ -165,25 +171,27 @@ Las métricas se registraron con **LangSmith**:
 | **Gemini embedding-001** | Semántico / Google Cloud | 31 | **67.74 %** | **[51.29 %, 84.20 %]** | **0.4866** | 636.4 ms |
 | **Qwen3 embedding-0.6b** | Semántico / Cloudflare Workers AI | 31 | **54.84 %** | [37.32 %, 72.36 %] | **0.3989** | 2012.0 ms |
 | **BGE-Large-EN-v1.5** | Semántico / Cloudflare Workers AI | 31 | **51.61 %** | [34.02 %, 69.20 %] | **0.3505** | 651.7 ms |
-| **Baseline (TF-IDF)** | Léxico tradicional / algorítmico | 31 | **32.26 %** | [15.80 %, 48.71 %] | **0.2769** | **6.8 ms** |
+| **Baseline (TF-IDF)** | Léxico tradicional / algorítmico | 31 | **32.26 %** | [15.80 %, 48.71 %] | **0.2258** | **2.6 ms** |
 
 
-**Intervalos de confianza y alcance del experimento:** cada modelo se evaluó en **una sola corrida**, sin repeticiones. El dataset tiene **31 alertas que cubren 17 técnicas MITRE distintas** (25 reglas únicas), por lo que los números son frágiles. El IC del 95 % se calculó con la aproximación normal (Wald): `p ± 1.96·sqrt(p(1−p)/n)`, donde `p` es el Hit@5 observado y `n` la cantidad de alertas evaluadas (31, o 14 en Plamo). Por eso el IC de Gemini va de **51.29 % a 84.20 %** (redondeado, 52 %–84 %) y se superpone con los de Qwen3 y BGE: la ventaja observada es **indicativa**, no concluyente. **Ampliar el dataset es la mejora prioritaria**; con más alertas y más técnicas los intervalos se angostan y la comparación gana robustez.
+**Intervalos de confianza y alcance del experimento:** cada modelo se evaluó en **una sola corrida**, sin repeticiones. El dataset tiene **31 alertas que cubren 17 técnicas MITRE distintas** (25 reglas únicas), por lo que los números son frágiles. El IC del 95 % se calculó con la aproximación normal (Wald): `p ± 1.96·sqrt(p(1−p)/n)`, donde `p` es el Hit@5 observado y `n` = 31 alertas para todos los modelos reportados. Por eso el IC de Gemini va de **51.29 % a 84.20 %** (redondeado, 52 %–84 %) y se superpone con los de Qwen3 y BGE: la ventaja observada es **indicativa**, no concluyente. **Plamo embedding-1b se excluyó de la comparación** porque solo procesó 14 de las 31 alertas; sus resultados no son comparables con los demás. **Ampliar el dataset es la mejora prioritaria**; con más alertas y más técnicas los intervalos se angostan y la comparación gana robustez.
 
-**Lectura de los resultados:** el mejor modelo semántico (Gemini embedding-001) mejora el baseline léxico TF-IDF en **+35.48 puntos porcentuales de Hit@5** y casi duplica el MRR (0.4866 vs. 0.2769). El costo es la latencia: 636.4 ms frente a 6.8 ms del baseline. La diferencia contra TF-IDF es la más clara (los intervalos no se solapan), mientras que entre los modelos semánticos el orden debe tomarse como tendencia.
+**Lectura de los resultados:** el mejor modelo semántico (Gemini embedding-001) mejora el baseline léxico TF-IDF en **+35.48 puntos porcentuales de Hit@5** y más que duplica el MRR (0.4866 vs. 0.2258). El costo es la latencia: 636.4 ms frente a 2.6 ms del baseline. La diferencia contra TF-IDF es la más clara (los intervalos no se solapan), mientras que entre los modelos semánticos el orden debe tomarse como tendencia.
 
 **Limitaciones de la anotación:** al ser un ground truth de etiqueta única, los valores de la tabla son conservadores. En las dos filas con técnica alternativa (554 → T1565.001; 80781 → T1098), las corridas registradas no devolvieron esas alternativas en el Top 5, así que los números no cambian; si en el futuro se aceptaran, el Hit@5 solo podría subir. Además, una de las 31 filas (80783) usa una técnica inferida: un cambio en esa anotación movería el Hit@5 como máximo 3.2 puntos porcentuales (1/31) y el MRR hasta 0.032, y el efecto exacto depende del modelo.
 
 Los resultados completos, con el análisis por modelo, están en [`notebooks/02_evaluacion_rag.ipynb`](notebooks/02_evaluacion_rag.ipynb) y [`notebooks/03_evaluacion_modelos_embedding.ipynb`](notebooks/03_evaluacion_modelos_embedding.ipynb); las salidas crudas de LangSmith, en [`reports/`](reports/).
 
-### Evaluación pendiente (generación LLM)
+### Evaluación de generación LLM (fidelidad y relevancia)
 
-La calidad de la **respuesta final** todavía no está medida. Queda pendiente evaluar:
+La calidad de la **respuesta final** se evalúa en [`notebooks/07_evaluacion_llm.ipynb`](notebooks/07_evaluacion_llm.ipynb). El experimento reutiliza el Top-5 que ya recuperó Gemini para cada una de las 31 alertas, genera una respuesta de triaje con el LLM y registra la corrida en [LangSmith](https://www.langchain.com/langsmith).
+
+Se miden dos dimensiones con una rúbrica manual de 1 a 5:
 
 - **Fidelidad (*Faithfulness*):** que todas las afirmaciones y técnicas mencionadas estén respaldadas por el contexto recuperado.
-- **Relevancia de la respuesta (*Answer Relevance*):** que la respuesta esté alineada con la consulta original.
+- **Relevancia de la respuesta (*Answer Relevance*):** que la respuesta esté alineada con la consulta original e incluya acciones de triaje.
 
-Para automatizar estas métricas se planea usar [**Ragas**](https://docs.ragas.io/) integrado con [LangSmith](https://www.langchain.com/langsmith), tal como se detalla en el [roadmap](#-roadmap).
+La anotación se hace en una **annotation queue de LangSmith** (feedback `fidelidad` y `relevancia`, escala 1–5). Después descargás el **export CSV** desde LangSmith, lo guardás en `reports/` y [`notebooks/07_evaluacion_llm.ipynb`](notebooks/07_evaluacion_llm.ipynb) lo interpreta para calcular el resumen; la descarga es manual y el notebook no consulta la API. También queda un CSV manual como respaldo si preferís puntuar en Excel. La puntuación se complementa con chequeos automáticos objetivos (acierto de la técnica principal, IDs mencionados fuera del contexto y latencia). **Estado: anotado (31/31)**. Resultados actuales: **Fidelidad** media 0.815 (IC 95 % [0.733, 0.896]), 80.6 % de respuestas con puntaje ≥ 4; **Relevancia** media 0.944 (IC 95 % [0.894, 0.993]), 93.5 % con puntaje ≥ 4. La automatización con [**Ragas**](https://docs.ragas.io/) o un juez LLM independiente queda como paso siguiente en el [roadmap](#-roadmap).
 
 
 ---
@@ -298,6 +306,10 @@ MODEL_6=groq:openai/gpt-oss-safeguard-20b
 
 # Modelo activo (referenciá una variable definida arriba):
 MODEL_NAME=${MODEL_2}
+
+# Determinismo del LLM (temperatura 0 y semilla fija)
+LLM_TEMPERATURE=0.0
+LLM_SEED=42
 
 # Configuración MITRE RAG
 EMBEDDING_MODEL=models/gemini-embedding-001
@@ -501,13 +513,14 @@ El target se valida con `_validate_target` y los flags con la misma allowlist qu
 ### Mejoras propuestas para futuros proyectos
 - [ ] **Ampliación del dataset de evaluación:** sumar más alertas de Wazuh y cubrir más técnicas MITRE (hoy son 31 alertas y 17 técnicas distintas). Con un dataset ampliado se repetirá la comparación entre modelos y se recalcularán los intervalos de confianza del 95 % para reducir la fragilidad de los resultados.
 - [ ] **Ground truth multi-etiqueta:** registrar todas las técnicas MITRE válidas por alerta y adaptar `mitre_retrieval_evaluator` para aceptar cualquiera de ellas; hoy las alternativas están en `notes` pero no se acreditan.
-- [ ] **Evaluación de generación LLM:** medición de *Fidelidad (Faithfulness)* y *Relevancia de la Respuesta (Answer Relevance)* utilizando [Ragas](https://docs.ragas.io/) integrado con [LangSmith](https://www.langchain.com/langsmith).
+- [ ] **Evaluación de generación LLM:** fidelidad y relevancia con rúbrica manual y [LangSmith](https://www.langchain.com/langsmith) en [`notebooks/07_evaluacion_llm.ipynb`](notebooks/07_evaluacion_llm.ipynb); automatizar las métricas con [Ragas](https://docs.ragas.io/) o un juez LLM independiente como paso siguiente.
 - [ ] **Contrastación con otras verticales de ciberseguridad:** integración y mapeo a marcos complementarios como **MITRE D3FEND** (contramedidas defensivas), **ATT&CK for Cloud**, **ATT&CK for Mobile** y **ATT&CK for ICS**, permitiendo contrastar hallazgos entre diferentes dominios y enriquecer el razonamiento del agente.
 - [ ] **Persistencia de conversaciones:** incorporación de persistencia de hilos con base de datos (PostgreSQL / SQLite Checkpointer).
 - [ ] **Ampliación de herramientas:** reactivar las verticales `web_apis`, `mobile` y `ot_ics` (hoy comentadas en el grafo) una vez que cuenten con herramientas propias.
 - [ ] **Interfaz amigable:** migrar la interacción de la terminal a una interfaz web o más amigable para el usuario, por ejemplo con herramientas como Streamlit, Chainlit o Gradio.
 
-Todo esto excede el alcance del trabajo final estipulado
+> Estas mejoras quedan fuera del alcance del trabajo final y se listan como líneas de continuidad; no afectan las funcionalidades ya implementadas ni los resultados reportados.
+
 ---
 
 ## 👥 Autor
