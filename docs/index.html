@@ -130,11 +130,11 @@
           <div class="mt-9 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-faint">
             <span><span class="font-mono font-medium text-fg">3</span> subagentes activos</span>
             <span class="hidden h-3.5 w-px bg-line sm:block" aria-hidden="true"></span>
-            <span><span class="font-mono font-medium text-fg">31</span> alertas evaluadas</span>
+            <span><span class="font-mono font-medium text-fg">88</span> alertas evaluadas</span>
             <span class="hidden h-3.5 w-px bg-line sm:block" aria-hidden="true"></span>
-            <span><span class="font-mono font-medium text-fg">67.74 %</span> Hit@5</span>
+            <span><span class="font-mono font-medium text-fg">67.05 %</span> Hit@5</span>
             <span class="hidden h-3.5 w-px bg-line sm:block" aria-hidden="true"></span>
-            <span><span class="font-mono font-medium text-fg">51.29–84.20 %</span> IC 95 %</span>
+            <span><span class="font-mono font-medium text-fg">57.22–76.87 %</span> IC 95 %</span>
           </div>
 
           <p class="mt-5 font-mono text-[11px] text-faint">Python 3.10+ · MIT · LangGraph + LangChain</p>
@@ -740,43 +740,50 @@
       <div class="container-x">
         <div data-reveal>
           <p class="section-kicker">Resultados</p>
-          <h2 class="section-title">Retrieval medido sobre alertas reales</h2>
+          <h2 class="section-title">Retrieval validado con 88 alertas reales</h2>
           <p class="lead">
-            Se evaluó el módulo de recuperación sobre <strong>31 alertas reales de Wazuh</strong>
-            (25 reglas únicas) mapeadas a <strong>17 técnicas MITRE ATT&amp;CK distintas</strong> a partir
-            de las propias reglas de Wazuh. Cada sistema debía devolver las 5 técnicas más probables
-            para cada alerta. Cada modelo se evaluó en <strong>una sola corrida</strong>: por el tamaño
-            muestral, los resultados son frágiles y se reportan con su intervalo de confianza del 95 %.
+            Tras la corrección, el dataset se amplió de <strong>31 a 88 alertas reales de Wazuh</strong>
+            y de 17 a <strong>36 técnicas MITRE ATT&amp;CK distintas</strong>. Al casi triplicar la
+            muestra, Gemini mantuvo su Hit@5 en <strong>67.05 %</strong> (−0.7 pp respecto a la fase
+            inicial) mientras el margen de error caía de <strong>±16.45 a ±9.82 pp</strong>. Cada
+            sistema debía devolver las 5 técnicas más probables para cada alerta y se evaluó en
+            <strong>una sola corrida</strong>, con su intervalo de confianza del 95 %.
           </p>
+          <div class="mt-4 flex flex-wrap items-center gap-2">
+            <span class="chip">Fase 1 · 31 alertas · 17 técnicas</span>
+            <span class="font-mono text-xs text-faint">→</span>
+            <span class="chip chip-accent">Fase 2 · 88 alertas · 36 técnicas</span>
+          </div>
         </div>
 
         <div class="mt-10 grid gap-4 sm:grid-cols-3" data-reveal>
           <div class="card p-5">
-            <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-faint">Hit@5</p>
-            <p class="mt-2 font-mono text-4xl font-semibold tracking-tight text-accent">67.74<span class="text-xl text-accent/70"> %</span></p>
-            <p class="mt-1.5 text-xs text-muted">Gemini embedding-001 · IC 95 % [51.29, 84.20]</p>
+            <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-faint">Hit@5 · dataset ampliado</p>
+            <p class="mt-2 font-mono text-4xl font-semibold tracking-tight text-accent">67.05<span class="text-xl text-accent/70"> %</span></p>
+            <p class="mt-1.5 text-xs text-muted">Gemini embedding-001 · IC 95 % [57.22, 76.87]</p>
           </div>
           <div class="card p-5">
-            <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-faint">MRR</p>
-            <p class="mt-2 font-mono text-4xl font-semibold tracking-tight text-cyan">0.4866</p>
+            <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-faint">MRR · dataset ampliado</p>
+            <p class="mt-2 font-mono text-4xl font-semibold tracking-tight text-cyan">0.4657</p>
             <p class="mt-1.5 text-xs text-muted">Gemini embedding-001</p>
           </div>
           <div class="card p-5">
             <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-faint">Mejora vs. baseline</p>
-            <p class="mt-2 font-mono text-4xl font-semibold tracking-tight text-warn">+35.48<span class="text-xl text-warn/70"> pp</span></p>
-            <p class="mt-1.5 text-xs text-muted">Hit@5 frente a TF-IDF</p>
+            <p class="mt-2 font-mono text-4xl font-semibold tracking-tight text-warn">+38.64<span class="text-xl text-warn/70"> pp</span></p>
+            <p class="mt-1.5 text-xs text-muted">Hit@5 frente a TF-IDF sobre 88 alertas</p>
           </div>
         </div>
 
         <div class="card mt-6 overflow-hidden" data-reveal>
           <div class="overflow-x-auto">
-            <table class="results-table w-full min-w-[860px] text-left">
-              <caption class="sr-only">Comparativa de modelos de embeddings y baseline TF-IDF</caption>
+            <table class="results-table w-full min-w-[980px] text-left">
+              <caption class="sr-only">Comparativa de modelos de embeddings y baseline TF-IDF en las dos fases de evaluación</caption>
               <thead>
                 <tr>
+                  <th scope="col">Fase</th>
                   <th scope="col">Modelo / Sistema</th>
                   <th scope="col">Tipo / Proveedor</th>
-                  <th scope="col" class="text-center">Muestras</th>
+                  <th scope="col" class="text-center">n</th>
                   <th scope="col" class="text-center">Hit@5</th>
                   <th scope="col" class="text-center">IC 95 %</th>
                   <th scope="col" class="text-center">MRR</th>
@@ -784,21 +791,18 @@
                 </tr>
               </thead>
               <tbody>
-                <tr class="best-row">
-                  <td>
-                    <span class="flex items-center gap-2">
-                      <strong>Gemini embedding-001</strong>
-                      <span class="chip chip-accent px-2 py-0.5 text-[9px]">mejor</span>
-                    </span>
-                  </td>
+                <tr>
+                  <td><span class="chip px-2 py-0.5 text-[9px]">Fase 1</span></td>
+                  <td>Gemini embedding-001</td>
                   <td>Semántico / Google Cloud</td>
                   <td class="text-center font-mono">31</td>
-                  <td class="text-center font-mono font-semibold text-accent">67.74 %</td>
-                  <td class="text-center font-mono font-semibold text-accent">[51.29, 84.20]</td>
-                  <td class="text-center font-mono font-semibold">0.4866</td>
+                  <td class="text-center font-mono">67.74 %</td>
+                  <td class="text-center font-mono">[51.29, 84.20]</td>
+                  <td class="text-center font-mono">0.4866</td>
                   <td class="text-right font-mono">636.4 ms</td>
                 </tr>
                 <tr>
+                  <td><span class="chip px-2 py-0.5 text-[9px]">Fase 1</span></td>
                   <td>Qwen3 embedding-0.6b</td>
                   <td>Semántico / Cloudflare Workers AI</td>
                   <td class="text-center font-mono">31</td>
@@ -808,6 +812,7 @@
                   <td class="text-right font-mono">2012.0 ms</td>
                 </tr>
                 <tr>
+                  <td><span class="chip px-2 py-0.5 text-[9px]">Fase 1</span></td>
                   <td>BGE-Large-EN-v1.5</td>
                   <td>Semántico / Cloudflare Workers AI</td>
                   <td class="text-center font-mono">31</td>
@@ -817,6 +822,7 @@
                   <td class="text-right font-mono">651.7 ms</td>
                 </tr>
                 <tr>
+                  <td><span class="chip px-2 py-0.5 text-[9px]">Fase 1</span></td>
                   <td><strong class="text-muted">Baseline (TF-IDF)</strong></td>
                   <td>Léxico tradicional / algorítmico</td>
                   <td class="text-center font-mono">31</td>
@@ -825,31 +831,78 @@
                   <td class="text-center font-mono">0.2258</td>
                   <td class="text-right font-mono font-semibold text-fg">2.6 ms</td>
                 </tr>
+                <tr class="best-row">
+                  <td><span class="chip chip-accent px-2 py-0.5 text-[9px]">Fase 2</span></td>
+                  <td>
+                    <span class="flex items-center gap-2">
+                      <strong>Gemini embedding-001</strong>
+                      <span class="chip chip-accent px-2 py-0.5 text-[9px]">mejor</span>
+                    </span>
+                  </td>
+                  <td>Semántico / Google Cloud</td>
+                  <td class="text-center font-mono">88</td>
+                  <td class="text-center font-mono font-semibold text-accent">67.05 %</td>
+                  <td class="text-center font-mono font-semibold text-accent">[57.22, 76.87]</td>
+                  <td class="text-center font-mono font-semibold">0.4657</td>
+                  <td class="text-right font-mono">529.8 ms</td>
+                </tr>
+                <tr>
+                  <td><span class="chip chip-accent px-2 py-0.5 text-[9px]">Fase 2</span></td>
+                  <td>Qwen3 embedding-0.6b</td>
+                  <td>Semántico / Cloudflare Workers AI</td>
+                  <td class="text-center font-mono">88</td>
+                  <td class="text-center font-mono">50.00 %</td>
+                  <td class="text-center font-mono">[39.55, 60.45]</td>
+                  <td class="text-center font-mono">0.3439</td>
+                  <td class="text-right font-mono">1267.9 ms</td>
+                </tr>
+                <tr>
+                  <td><span class="chip chip-accent px-2 py-0.5 text-[9px]">Fase 2</span></td>
+                  <td>BGE-Large-EN-v1.5</td>
+                  <td>Semántico / Cloudflare Workers AI</td>
+                  <td class="text-center font-mono">88</td>
+                  <td class="text-center font-mono">42.05 %</td>
+                  <td class="text-center font-mono">[31.73, 52.36]</td>
+                  <td class="text-center font-mono">0.2862</td>
+                  <td class="text-right font-mono">627.6 ms</td>
+                </tr>
+                <tr>
+                  <td><span class="chip chip-accent px-2 py-0.5 text-[9px]">Fase 2</span></td>
+                  <td><strong class="text-muted">Baseline (TF-IDF)</strong></td>
+                  <td>Léxico tradicional / algorítmico</td>
+                  <td class="text-center font-mono">88</td>
+                  <td class="text-center font-mono">28.41 %</td>
+                  <td class="text-center font-mono">[18.99, 37.83]</td>
+                  <td class="text-center font-mono">0.1544</td>
+                  <td class="text-right font-mono font-semibold text-fg">2.7 ms</td>
+                </tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        
         <p class="mt-2 text-xs leading-relaxed text-faint">
           IC 95 % calculado con la aproximación normal (Wald): p ± 1.96·√(p(1−p)/n), con n = 31
-          (31 alertas). Cada modelo se evaluó en una sola corrida y el dataset cubre 17 técnicas
-          distintas, por lo que los intervalos son anchos: la ventaja de Gemini sobre Qwen3 y BGE
-          es indicativa, no concluyente. La diferencia frente a TF-IDF sí es clara (los intervalos
-          no se solapan). Plamo embedding-1b se excluyó de la comparación porque solo procesó
-          14 de las 31 alertas. Ampliar el dataset es la mejora prioritaria.
+          en la fase 1 y n = 88 en la fase 2. Cada modelo se evaluó en una sola corrida. Al ampliar
+          la muestra, el margen de error de Gemini bajó de ±16.45 a ±9.82 pp: su IC [57.22, 76.87]
+          ya <strong class="text-muted">no se solapa</strong> con TF-IDF ni con BGE, así que la ventaja
+          sobre ellos es concluyente (sí se solapa con Qwen3, por lo que ese orden es tendencia).
+          Plamo embedding-1b se excluyó de la comparación porque solo procesó 14 de las 31 alertas.
+          Procedimiento y resultados completos en el
+          <a class="text-muted transition hover:text-accent" href="https://github.com/joaquincernik/inteligencia-artificial-final/blob/main/notebooks/08_evaluacion_rag_dataset_ampliado.ipynb">notebook 08 ↗</a>.
         </p>
 
         <figure class="mt-8" data-reveal>
           <div class="shot">
             <div class="shot-bar">
               <span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span>
-              <span class="shot-label ml-2">comparativa · embeddings</span>
+              <span class="shot-label ml-2">comparativa · dataset inicial (n=31)</span>
             </div>
-            <img src="img/comparativa_embeddings.png" alt="Gráfico comparativo de modelos de embeddings" loading="lazy" width="1600" height="800" class="bg-white/95 p-3">
+            <img src="img/comparativa_embeddings.png" alt="Gráfico comparativo de modelos de embeddings sobre el dataset inicial de 31 alertas" loading="lazy" width="1600" height="800" class="bg-white/95 p-3">
           </div>
           <figcaption class="mt-2.5 text-center text-xs text-faint">
-            Comparativa de Hit@5, MRR y latencia entre los modelos evaluados y el baseline TF-IDF.
+            Comparativa original de Hit@5, MRR y latencia sobre el <strong>dataset inicial (31 alertas)</strong>.
+            Los resultados del dataset ampliado (88 alertas) están en la tabla superior y en el notebook 08.
           </figcaption>
         </figure>
       </div>

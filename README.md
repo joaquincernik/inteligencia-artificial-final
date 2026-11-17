@@ -88,6 +88,17 @@ Capazeta utiliza la base de conocimiento oficial **MITRE ATT&CK Enterprise** par
 | Variables / Campos | IDs de técnicas, tácticas, descripciones, mitigaciones y referencias de TTPs |
 | Licencia del dataset | Apache 2.0 (MITRE ATT&CK) |
 
+### Datasets de evaluación
+
+La evaluación del retrieval se realizó en dos fases sobre alertas reales de Wazuh anotadas con técnicas MITRE ATT&CK:
+
+| Conjunto | Alertas | Descripciones | Técnicas MITRE | Archivo |
+|---|---:|---|---:|---|
+| Inicial (fase 1) | 31 | 25 reglas únicas | 17 | [`tests/dataset_evaluacion_langsmith.csv`](tests/dataset_evaluacion_langsmith.csv) |
+| Ampliado (fase 2) | 88 | 88 descripciones únicas | 36 | [`tests/dataset_evaluacion_langsmith_ampliado.csv`](tests/dataset_evaluacion_langsmith_ampliado.csv) |
+
+El conjunto ampliado se construyó para reducir la fragilidad estadística del inicial. La generación de las alertas, su exportación desde Wazuh y la clasificación por `mitre_id` se detallan en [Dataset ampliado: generación y clasificación de alertas](#dataset-ampliado-generación-y-clasificación-de-alertas) y en [`notebooks/08_evaluacion_rag_dataset_ampliado.ipynb`](notebooks/08_evaluacion_rag_dataset_ampliado.ipynb).
+
 ---
 
 ## 🔬 Metodología
@@ -126,7 +137,7 @@ Las llamadas al LLM usan `temperature=0.0` y una semilla fija (`LLM_SEED=42`) pa
 
 ### Ground truth de la evaluación RAG
 
-El conjunto de evaluación tiene **31 alertas de Wazuh** (descripciones de alerta) provenientes de **25 reglas únicas**; una misma regla puede aparecer en varias filas cuando Wazuh emite descripciones distintas (por ejemplo, la regla 80791 aparece con cuatro rutas borradas). La anotación completa está en [`tests/wazuh_ground_truth_annoted.csv`](tests/wazuh_ground_truth_annoted.csv) y el subconjunto que consume LangSmith, en [`tests/dataset_evaluacion_langsmith.csv`](tests/dataset_evaluacion_langsmith.csv). El procedimiento de clasificación y evaluación está implementado en [`notebooks/02_evaluacion_rag.ipynb`](notebooks/02_evaluacion_rag.ipynb).
+El conjunto de evaluación **inicial** tiene **31 alertas de Wazuh** (descripciones de alerta) provenientes de **25 reglas únicas**; una misma regla puede aparecer en varias filas cuando Wazuh emite descripciones distintas (por ejemplo, la regla 80791 aparece con cuatro rutas borradas). La anotación completa está en [`tests/wazuh_ground_truth_annoted.csv`](tests/wazuh_ground_truth_annoted.csv) y el subconjunto que consume LangSmith, en [`tests/dataset_evaluacion_langsmith.csv`](tests/dataset_evaluacion_langsmith.csv). El procedimiento de clasificación y evaluación está implementado en [`notebooks/02_evaluacion_rag.ipynb`](notebooks/02_evaluacion_rag.ipynb). El conjunto ampliado se describe más abajo.
 
 - **Fuente de la técnica:** el `mitre_id` de referencia se tomó del **mapeo MITRE ATT&CK que declaran las propias reglas de Wazuh** (`rule.id` → `mitre.id`), no de una comparación manual contra el catálogo.
 - **Unidad de anotación:** cada fila corresponde a una descripción de alerta (`rule.description`), que es exactamente el texto que se usa como consulta al retriever. La columna `Count` registra cuántos eventos de esa descripción se observaron y **no** se usa para ponderar la métrica.
@@ -143,6 +154,16 @@ El conjunto de evaluación tiene **31 alertas de Wazuh** (descripciones de alert
 
 - **Reglas con más de una técnica válida:** el dataset de evaluación guarda **una sola técnica de referencia por alerta** (el mapeo principal de Wazuh). Las alternativas quedan documentadas en `notes`, pero el evaluador actual (`mitre_retrieval_evaluator`, en los notebooks 02 y 03) solo compara contra ese `mitre_id` principal. Por lo tanto, si el retriever devuelve una alternativa válida en lugar de la principal, la fila se cuenta como *miss*. Es un criterio **conservador**: Hit@5 y MRR funcionan como piso, no como techo.
 
+### Dataset ampliado: generación y clasificación de alertas
+
+Para superar la fragilidad estadística del conjunto inicial se amplió la evaluación a **88 alertas** (88 descripciones únicas, **36 técnicas MITRE distintas**). El procedimiento está documentado en [`notebooks/08_evaluacion_rag_dataset_ampliado.ipynb`](notebooks/08_evaluacion_rag_dataset_ampliado.ipynb) y consta de tres etapas:
+
+1. **Generación de eventos benignos en el stack de Wazuh.** El script [`tests/wazuh_generar_eventos_v2.sh`](tests/wazuh_generar_eventos_v2.sh) (requiere `sudo`) ejecuta comandos reales de *discovery*, credential access, creación de cuentas, persistencia (cron/systemd), escalada de privilegios, FIM, ofuscación, simulación web y transferencia/C2. Cada técnica se marca en syslog con `logger "WAZUH_SIM: INICIANDO <TID> - <nombre>"` y hay una pausa de 3 s entre técnicas para que Wazuh alcance a emitir las alertas. El script usa un sufijo aleatorio para usuarios y archivos temporales, y revierte todo lo que crea.
+2. **Exportación de alertas desde Wazuh.** Se exportan desde el dashboard de Wazuh las alertas correspondientes a la generación (los marcadores `WAZUH_SIM:` permiten identificar la sesión de prueba).
+3. **Clasificación por `mitre_id`.** Cada descripción de alerta se etiqueta con su técnica MITRE guiándose por el mapeo que declara la propia regla de Wazuh (`rule.id` → `mitre.id`) y, para los casos sin mapeo explícito, por la sección *Data Sources* del portal oficial de MITRE ATT&CK. El resultado es [`tests/dataset_evaluacion_langsmith_ampliado.csv`](tests/dataset_evaluacion_langsmith_ampliado.csv), con las columnas `rule.description` y `mitre_id`.
+
+A diferencia del conjunto inicial, el ampliado no registra notas por fila, así que se mantiene el criterio de **una técnica de referencia por alerta** y el evaluador sigue siendo conservador (una alternativa válida cuenta como *miss*). Las alertas se subieron a LangSmith bajo el dataset `Evaluacion_Wazuh_MITRE_DATASET_AMPLIADO` y se evaluaron contra TF-IDF y los tres modelos de embeddings.
+
 ---
 
 ## 📈 Resultados
@@ -154,17 +175,22 @@ El sistema está implementado y validado de punta a punta: resuelve consultas de
 - **Enrutamiento multi-agente:** Clasificación correcta de las consultas hacia los 3 dominios de especialidad activos.
 - **Herramientas activas:** Escaneo de red con Nmap (destino, puertos y flags validados contra una lista blanca), consulta de agentes/eventos/alertas desde Wazuh API/Indexer y generación automatizada de reportes en Markdown y PDF.
 - **RAG MITRE ATT&CK:** Recuperación semántica de técnicas y tácticas desde el bundle STIX sobre un índice vectorial FAISS, con embeddings de Gemini (por defecto) o Cloudflare Workers AI.
+- **Evaluación ampliada:** el dataset de retrieval pasó de 31 a 88 alertas (17 → 36 técnicas); Gemini mantuvo su Hit@5 en ~67 % y el margen de error cayó de ±16.45 a ±9.82 pp. Ver [Resultados](#-resultados).
 - **Arquitectura modular:** Grafo LangGraph con bucles de tool-calling y persistencia en memoria (`InMemorySaver`).
 
-### Evaluación cuantitativa del retrieval
+### Evaluación cuantitativa del retrieval: dos fases
 
-Se evaluó el módulo de recuperación del RAG sobre **31 alertas reales de Wazuh** (25 reglas únicas) mapeadas a MITRE ATT&CK a partir de las propias reglas de Wazuh. El dataset de evaluación está en [`tests/dataset_evaluacion_langsmith.csv`](tests/dataset_evaluacion_langsmith.csv) y la anotación completa (con regla, técnica, táctica y notas) en [`tests/wazuh_ground_truth_annoted.csv`](tests/wazuh_ground_truth_annoted.csv). El criterio de anotación se detalla en [Ground truth de la evaluación RAG](#ground-truth-de-la-evaluación-rag).
-
-Las métricas se registraron con **LangSmith**:
+La evaluación se realizó en dos fases con el mismo protocolo: cada sistema devuelve el Top 5 de técnicas MITRE para cada descripción de alerta. Las métricas se registraron con **LangSmith**:
 
 - **Hit@5:** proporción de consultas en las que la técnica de referencia (el `mitre_id` principal anotado) aparece entre los 5 primeros resultados. Las técnicas alternativas documentadas en `notes` no se acreditan.
 - **MRR (*Mean Reciprocal Rank*):** promedio del inverso de la posición de la técnica de referencia en el ranking (0 si no aparece).
 - **Latencia promedio:** tiempo medio de respuesta del retrieval por consulta.
+
+Cada modelo se evaluó en **una sola corrida**, sin repeticiones, y el IC del 95 % se calcula con la aproximación normal (Wald): `p ± 1.96·sqrt(p(1−p)/n)`, donde `p` es el Hit@5 observado y `n` el tamaño de la muestra.
+
+#### Fase 1 — dataset inicial (n = 31)
+
+Se evaluó sobre **31 alertas reales de Wazuh** (25 reglas únicas, 17 técnicas MITRE) mapeadas a MITRE ATT&CK a partir de las propias reglas de Wazuh. El dataset está en [`tests/dataset_evaluacion_langsmith.csv`](tests/dataset_evaluacion_langsmith.csv) y la anotación completa (con regla, técnica, táctica y notas) en [`tests/wazuh_ground_truth_annoted.csv`](tests/wazuh_ground_truth_annoted.csv). El criterio de anotación se detalla en [Ground truth de la evaluación RAG](#ground-truth-de-la-evaluación-rag). El análisis por modelo está en [`notebooks/02_evaluacion_rag.ipynb`](notebooks/02_evaluacion_rag.ipynb) y [`notebooks/03_evaluacion_modelos_embedding.ipynb`](notebooks/03_evaluacion_modelos_embedding.ipynb).
 
 | Modelo / Sistema | Tipo / Proveedor | Muestras | Hit@5 | IC 95 % (Hit@5) | MRR | Latencia prom. |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
@@ -174,7 +200,7 @@ Las métricas se registraron con **LangSmith**:
 | **Baseline (TF-IDF)** | Léxico tradicional / algorítmico | 31 | **32.26 %** | [15.80 %, 48.71 %] | **0.2258** | **2.6 ms** |
 
 
-**Intervalos de confianza y alcance del experimento:** cada modelo se evaluó en **una sola corrida**, sin repeticiones. El dataset tiene **31 alertas que cubren 17 técnicas MITRE distintas** (25 reglas únicas), por lo que los números son frágiles. El IC del 95 % se calculó con la aproximación normal (Wald): `p ± 1.96·sqrt(p(1−p)/n)`, donde `p` es el Hit@5 observado y `n` = 31 alertas para todos los modelos reportados. Por eso el IC de Gemini va de **51.29 % a 84.20 %** (redondeado, 52 %–84 %) y se superpone con los de Qwen3 y BGE: la ventaja observada es **indicativa**, no concluyente. **Plamo embedding-1b se excluyó de la comparación** porque solo procesó 14 de las 31 alertas; sus resultados no son comparables con los demás. **Ampliar el dataset es la mejora prioritaria**; con más alertas y más técnicas los intervalos se angostan y la comparación gana robustez.
+**Intervalos de confianza y alcance del experimento:** cada modelo se evaluó en **una sola corrida**, sin repeticiones. El dataset tiene **31 alertas que cubren 17 técnicas MITRE distintas** (25 reglas únicas), por lo que los números son frágiles. El IC del 95 % se calculó con la aproximación normal (Wald): `p ± 1.96·sqrt(p(1−p)/n)`, donde `p` es el Hit@5 observado y `n` = 31 alertas para todos los modelos reportados. Por eso el IC de Gemini va de **51.29 % a 84.20 %** (redondeado, 52 %–84 %) y se superpone con los de Qwen3 y BGE: la ventaja observada es **indicativa**, no concluyente. **Plamo embedding-1b se excluyó de la comparación** porque solo procesó 14 de las 31 alertas; sus resultados no son comparables con los demás. Esta limitación se abordó en la Fase 2, con un dataset casi tres veces más grande.
 
 **Lectura de los resultados:** el mejor modelo semántico (Gemini embedding-001) mejora el baseline léxico TF-IDF en **+35.48 puntos porcentuales de Hit@5** y más que duplica el MRR (0.4866 vs. 0.2258). El costo es la latencia: 636.4 ms frente a 2.6 ms del baseline. La diferencia contra TF-IDF es la más clara (los intervalos no se solapan), mientras que entre los modelos semánticos el orden debe tomarse como tendencia.
 
@@ -182,9 +208,26 @@ Las métricas se registraron con **LangSmith**:
 
 Los resultados completos, con el análisis por modelo, están en [`notebooks/02_evaluacion_rag.ipynb`](notebooks/02_evaluacion_rag.ipynb) y [`notebooks/03_evaluacion_modelos_embedding.ipynb`](notebooks/03_evaluacion_modelos_embedding.ipynb); las salidas crudas de LangSmith, en [`reports/`](reports/).
 
+#### Fase 2 — dataset ampliado (n = 88)
+
+Para reducir la fragilidad estadística de la fase 1 se amplió el ground truth a **88 alertas** (88 descripciones únicas, **36 técnicas MITRE distintas**); el procedimiento de generación y clasificación está en [Dataset ampliado: generación y clasificación de alertas](#dataset-ampliado-generación-y-clasificación-de-alertas). El protocolo, las métricas y el criterio de anotación de etiqueta única son los mismos que en la fase 1. Los resultados, verificados directamente desde los CSVs de `reports/`, son:
+
+| Modelo / Sistema | Tipo / Proveedor | Muestras | Hit@5 | IC 95 % (Hit@5) | MRR | Latencia prom. |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| **Gemini embedding-001** | Semántico / Google Cloud | 88 | **67.05 %** | **[57.22 %, 76.87 %]** | **0.4657** | 529.8 ms |
+| **Qwen3 embedding-0.6b** | Semántico / Cloudflare Workers AI | 88 | **50.00 %** | [39.55 %, 60.45 %] | **0.3439** | 1267.9 ms |
+| **BGE-Large-EN-v1.5** | Semántico / Cloudflare Workers AI | 88 | **42.05 %** | [31.73 %, 52.36 %] | **0.2862** | 627.6 ms |
+| **Baseline (TF-IDF)** | Léxico tradicional / algorítmico | 88 | **28.41 %** | [18.99 %, 37.83 %] | **0.1544** | **2.7 ms** |
+
+**Lectura de los resultados:** el hallazgo central es que Gemini **mantuvo su rendimiento** al casi triplicar la muestra: 67.74 % → 67.05 % (**−0.7 pp**). En cambio, los baseline cayeron (TF-IDF −3.85 pp, BGE −9.56 pp, Qwen3 −4.84 pp), lo que confirma que el buen resultado inicial de Gemini no era un artefacto de la muestra pequeña. Gemini supera al baseline léxico por **+38.64 pp de Hit@5** y más que triplica el MRR (0.4657 vs. 0.1544), con una latencia de 529.8 ms frente a 2.7 ms de TF-IDF (aceptable en un flujo de triaje asíncrono del SOC).
+
+**Intervalos de confianza:** al pasar de n = 31 a n = 88, el margen de error de Gemini se redujo de **±16.45 pp a ±9.82 pp**. Su IC 95 % **[57.22 %, 76.87 %] no se solapa** con el de TF-IDF [18.99 %, 37.83 %] ni con el de BGE [31.73 %, 52.36 %], así que la ventaja sobre esos dos sistemas ahora es **concluyente** (en la fase 1 solo era indicativa). Sí se solapa con Qwen3 [39.55 %, 60.45 %], por lo que el orden entre Gemini y Qwen3 sigue leyéndose como tendencia. **Plamo embedding-1b** vuelve a quedar fuera: en la fase 1 solo procesó 14 de 31 alertas y en esta fase no se repitió su evaluación.
+
+La anotación del conjunto ampliado no incluye notas por fila, así que se mantiene el criterio conservador de una sola técnica de referencia por alerta. El análisis completo está en [`notebooks/08_evaluacion_rag_dataset_ampliado.ipynb`](notebooks/08_evaluacion_rag_dataset_ampliado.ipynb); el ground truth en [`tests/dataset_evaluacion_langsmith_ampliado.csv`](tests/dataset_evaluacion_langsmith_ampliado.csv) y las salidas crudas de LangSmith en [`reports/evaluacion_capazeta_rag_ampliado_gemini-embedding-001.csv`](reports/evaluacion_capazeta_rag_ampliado_gemini-embedding-001.csv), [`reports/evaluacion_dataset_ampliado_capazeta_rag_qwen3-embedding-0.6b.csv`](reports/evaluacion_dataset_ampliado_capazeta_rag_qwen3-embedding-0.6b.csv), [`reports/evaluacion_dataset_ampliado_capazeta_rag_bge-large-en-v1.5.csv`](reports/evaluacion_dataset_ampliado_capazeta_rag_bge-large-en-v1.5.csv) y [`reports/evaluacion_capazeta_ampliado_tf_idf.csv`](reports/evaluacion_capazeta_ampliado_tf_idf.csv).
+
 ### Evaluación de generación LLM (fidelidad y relevancia)
 
-La calidad de la **respuesta final** se evalúa en [`notebooks/07_evaluacion_llm.ipynb`](notebooks/07_evaluacion_llm.ipynb). El experimento reutiliza el Top-5 que ya recuperó Gemini para cada una de las 31 alertas, genera una respuesta de triaje con el LLM y registra la corrida en [LangSmith](https://www.langchain.com/langsmith).
+La calidad de la **respuesta final** se evalúa en [`notebooks/07_evaluacion_llm.ipynb`](notebooks/07_evaluacion_llm.ipynb). El experimento reutiliza el Top-5 que ya recuperó Gemini para cada una de las 31 alertas, genera una respuesta de triaje con el LLM y registra la corrida en [LangSmith](https://www.langchain.com/langsmith). **Este experimento corresponde al dataset inicial de 31 alertas (Fase 1) y no se repitió sobre las 88 del dataset ampliado**; las cifras de abajo no deben leerse como resultados de la Fase 2.
 
 Se miden dos dimensiones con una rúbrica manual de 1 a 5:
 
@@ -505,13 +548,14 @@ El target se valida con `_validate_target` y los flags con la misma allowlist qu
 ## 🗺️ Roadmap
 
 ### Completado
-- [x] **Evaluación cuantitativa de Retrieval:** métricas *Hit@5* y *MRR* sobre 31 alertas de Wazuh anotadas con técnicas MITRE ATT&CK. Ver [Resultados](#-resultados).
-- [x] **Baseline comparativo léxico:** implementación y evaluación de TF-IDF contra los modelos de embeddings (32.26 % de Hit@5 vs. 67.74 % del mejor modelo semántico).
+- [x] **Evaluación cuantitativa de Retrieval:** métricas *Hit@5* y *MRR* en dos fases, sobre 31 y luego 88 alertas de Wazuh anotadas con técnicas MITRE ATT&CK. Gemini se mantuvo en ~67 % de Hit@5 con un IC 95 % más acotado. Ver [Resultados](#-resultados).
+- [x] **Ampliación del dataset de evaluación:** de 31 alertas / 17 técnicas a 88 alertas / 36 técnicas, con generación de eventos, exportación desde Wazuh, clasificación por `mitre_id` e intervalos de confianza recalculados. Ver [Dataset ampliado: generación y clasificación de alertas](#dataset-ampliado-generación-y-clasificación-de-alertas).
+- [x] **Baseline comparativo léxico:** implementación y evaluación de TF-IDF contra los modelos de embeddings en ambas fases (28.41 % de Hit@5 vs. 67.05 % del mejor modelo semántico en el dataset ampliado).
 - [x] **Exportación de reportes a PDF:** implementada con `save_pdf=True` en `run_nmap_scan`, `wazuh_search_alerts`, `wazuh_mitre_coverage` y `search_mitre_attack`. El Markdown de `report.py` se renderiza a PDF con ReportLab en `src/capazeta/tools/pdf_report.py`.
 - [x] **Tests automáticos:** suite de `pytest` en [`tests/test_nmap.py`](tests/test_nmap.py) y [`tests/test_pdf.py`](tests/test_pdf.py) sobre la allowlist de Nmap (scripts, inyecciones, flags peligrosos) y la generación de PDFs. Ver [Tests](#-tests).
 
 ### Mejoras propuestas para futuros proyectos
-- [ ] **Ampliación del dataset de evaluación:** sumar más alertas de Wazuh y cubrir más técnicas MITRE (hoy son 31 alertas y 17 técnicas distintas). Con un dataset ampliado se repetirá la comparación entre modelos y se recalcularán los intervalos de confianza del 95 % para reducir la fragilidad de los resultados.
+- [ ] **Repetir la evaluación de generación LLM sobre el dataset ampliado:** la fidelidad y relevancia de [`notebooks/07_evaluacion_llm.ipynb`](notebooks/07_evaluacion_llm.ipynb) se midieron solo sobre las 31 alertas iniciales; falta correr la misma rúbrica sobre las 88 para completar la evaluación de extremo a extremo en la Fase 2.
 - [ ] **Ground truth multi-etiqueta:** registrar todas las técnicas MITRE válidas por alerta y adaptar `mitre_retrieval_evaluator` para aceptar cualquiera de ellas; hoy las alternativas están en `notes` pero no se acreditan.
 - [ ] **Evaluación de generación LLM:** fidelidad y relevancia con rúbrica manual y [LangSmith](https://www.langchain.com/langsmith) en [`notebooks/07_evaluacion_llm.ipynb`](notebooks/07_evaluacion_llm.ipynb); automatizar las métricas con [Ragas](https://docs.ragas.io/) o un juez LLM independiente como paso siguiente.
 - [ ] **Contrastación con otras verticales de ciberseguridad:** integración y mapeo a marcos complementarios como **MITRE D3FEND** (contramedidas defensivas), **ATT&CK for Cloud**, **ATT&CK for Mobile** y **ATT&CK for ICS**, permitiendo contrastar hallazgos entre diferentes dominios y enriquecer el razonamiento del agente.
