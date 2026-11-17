@@ -1,6 +1,6 @@
 from langchain_core.messages import AIMessage, BaseMessage, SystemMessage
 from capazeta.graph.state import AgentState
-from capazeta.llm import get_llm
+from capazeta.llm import get_llm, invoke_with_retry
 from capazeta.tools import (
     run_nmap_scan,
     search_mitre_attack,
@@ -91,7 +91,7 @@ def _extract_domain(text: str) -> str:
 def _domain_node(state: AgentState, domain: str) -> dict:
     system_prompt = f"{BASE_SYSTEM_PROMPT}\n\nEspecialidad asignada -> {DOMAINS[domain]}"
     messages = [SystemMessage(content=system_prompt)] + state["messages"]
-    response: AIMessage = llm.invoke(messages)
+    response: AIMessage = invoke_with_retry(llm, messages)
     return {"messages": [response], "next_node": domain}
 
 
@@ -103,12 +103,14 @@ def _tool_domain_node(
         f"{extra_instructions}"
     )
     messages = [SystemMessage(content=system_prompt)] + state["messages"]
-    response: AIMessage = bound_llm.invoke(messages)
+    response: AIMessage = invoke_with_retry(bound_llm, messages)
     return {"messages": [response], "next_node": domain}
 
 
 def router_node(state: AgentState) -> dict:
-    response = llm.invoke([SystemMessage(content=ROUTER_SYSTEM_PROMPT)] + state["messages"])
+    response = invoke_with_retry(
+        llm, [SystemMessage(content=ROUTER_SYSTEM_PROMPT)] + state["messages"]
+    )
     return {"next_node": _extract_domain(_message_text(response))}
 
 

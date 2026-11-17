@@ -3,6 +3,7 @@ from langchain_core.messages import AIMessage, HumanMessage
 from capazeta import ui
 from capazeta.config import MODEL_NAME, THREAD_ID
 from capazeta.graph.builder import build_graph
+from capazeta.llm import LLMConnectionError
 
 DIAGRAM_PATH = "docs/img/grafico.png"
 
@@ -62,6 +63,10 @@ def main():
                 response = graph.invoke({"messages": [user_message]}, config=config)
         except KeyboardInterrupt:
             ui.print_error("Consulta cancelada.")
+            continue
+        except LLMConnectionError as exc:
+            # El helper ya devuelve un mensaje presentable y sin datos sensibles.
+            ui.print_error(str(exc))
             continue
         except Exception as exc:
             ui.print_error(f"Error al procesar la consulta: {exc}")
