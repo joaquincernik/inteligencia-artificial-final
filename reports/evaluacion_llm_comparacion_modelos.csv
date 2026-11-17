@@ -1,0 +1,3 @@
+﻿modelo,generador,juez_puntajes,fidelidad_subjetiva,relevancia_subjetiva,acierto_principal,acierto_mencion,pct_ids_fuera_contexto,fidelidad_ids,latencia_mediana_s,n
+Gemini,google_genai:gemini-3.1-flash-lite,anotador humano (juez de fidelidad/relevancia: Groq),4.26,4.77,0.6452,0.6452,0.0323,0.9893,2.908,31
+Groq,groq:openai/gpt-oss-120b,juez Gemini,4.58,4.9,0.6129,0.6129,0.0323,0.9839,12.739,31
