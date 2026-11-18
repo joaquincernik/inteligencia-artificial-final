@@ -1079,7 +1079,9 @@
             La respuesta final se evaluó sobre las <strong>31 alertas de la fase 1</strong>, reutilizando el
             Top 5 recuperado por Gemini como contexto fijo. La anotación principal la hizo el autor con una
             rúbrica de 1 a 5 y se contrastó con un <strong>juez LLM independiente</strong> (Groq
-            <code>openai/gpt-oss-120b</code>). No se repitió sobre las 88 alertas del dataset ampliado.
+            <code>openai/gpt-oss-120b</code>). No se repitió sobre las 88 alertas del dataset ampliado:
+            generar y juzgar esas 88 respuestas supondrían unas 176 llamadas y <strong class="text-muted">agotarían
+            el presupuesto de tokens disponible</strong>, por lo que esa corrida queda como trabajo futuro.
           </p>
 
           <div class="mt-10 grid gap-4 sm:grid-cols-3" data-reveal>
