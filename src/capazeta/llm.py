@@ -53,6 +53,18 @@ class LLMConnectionError(RuntimeError):
         )
 
 
+class LLMConfigurationError(RuntimeError):
+    """Error de configuración del LLM: se informa al arrancar, sin reintentar."""
+
+    def __init__(self, variable: str, model_name: str):
+        self.variable = variable
+        self.model_name = model_name
+        super().__init__(
+            f"Falta la variable {variable} en el entorno/.env para usar el modelo "
+            f"{model_name}. Configurá la key del proveedor y volvé a ejecutar."
+        )
+
+
 def invoke_with_retry(
     llm,
     messages,
@@ -86,6 +98,27 @@ def invoke_with_retry(
     raise LLMConnectionError(intentos, ultima_exc) from ultima_exc
 
 
+_CREDENCIALES_POR_PROVEEDOR = {
+    "openai": "OPENAI_API_KEY",
+    "groq": "GROQ_API_KEY",
+    "google_genai": "GOOGLE_API_KEY",
+}
+
+
+def validar_credenciales(model_name: str | None = None) -> None:
+    """Check temprano de la key del proveedor activo antes de crear el modelo.
+
+    Es un error de configuración, no de conexión: no se reintenta y la CLI lo
+    muestra al arrancar. Proveedores no mapeados se dejan pasar para no romper
+    usos alternativos de `init_chat_model`.
+    """
+    nombre = model_name or MODEL_NAME
+    proveedor = nombre.split(":", 1)[0].strip()
+    variable = _CREDENCIALES_POR_PROVEEDOR.get(proveedor)
+    if variable and not (os.getenv(variable) or "").strip():
+        raise LLMConfigurationError(variable, nombre)
+
+
 def _seed_kwargs(provider: str) -> dict:
     """Aplica la semilla según el proveedor del modelo configurado."""
     if provider in {"google_genai", "openai"}:
@@ -98,6 +131,7 @@ def _seed_kwargs(provider: str) -> dict:
 
 
 def get_llm():
+    validar_credenciales()
     provider = MODEL_NAME.split(":", 1)[0].strip()
     return init_chat_model(
         MODEL_NAME,

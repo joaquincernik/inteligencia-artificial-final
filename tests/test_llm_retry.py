@@ -1,12 +1,21 @@
-"""Tests del reintento ante fallos de conexión del LLM.
+"""Tests del reintento ante fallos de conexión y de la configuración del LLM.
 
 Se usan modelos falsos y `sleep` inyectado para que no haya red ni esperas.
 """
 
+import os
+import subprocess
+import sys
+
 import pytest
 from langchain_core.exceptions import ModelConnectionError
 
-from capazeta.llm import LLMConnectionError, invoke_with_retry
+from capazeta.llm import (
+    LLMConfigurationError,
+    LLMConnectionError,
+    invoke_with_retry,
+    validar_credenciales,
+)
 
 
 class ModeloFalso:
@@ -86,3 +95,54 @@ def test_error_no_reintentable_se_propaga():
         invoke_with_retry(modelo, ["hola"], sleep=_sin_espera)
 
     assert modelo.llamadas == 1
+
+
+@pytest.mark.parametrize(
+    ("modelo", "variable"),
+    [
+        ("openai:gpt-4o-mini", "OPENAI_API_KEY"),
+        ("groq:openai/gpt-oss-120b", "GROQ_API_KEY"),
+        ("google_genai:gemini-3.1-flash-lite", "GOOGLE_API_KEY"),
+    ],
+)
+def test_api_key_vacia_falla_antes_de_inicializar(monkeypatch, modelo, variable):
+    monkeypatch.setenv(variable, "")
+
+    with pytest.raises(LLMConfigurationError) as info:
+        validar_credenciales(modelo)
+
+    mensaje = str(info.value)
+    assert variable in mensaje
+    assert modelo in mensaje
+    assert "Traceback" not in mensaje
+
+
+def test_api_key_presente_pasa_la_validacion(monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-clave-ficticia-de-prueba")
+
+    assert validar_credenciales("openai:gpt-4o-mini") is None
+
+
+def test_cli_con_api_key_vacia_sale_sin_traceback():
+    entorno = os.environ.copy()
+    entorno.update(
+        {
+            "MODEL_NAME": "openai:gpt-4o-mini",
+            "OPENAI_API_KEY": "",
+            "COLUMNS": "200",
+        }
+    )
+
+    resultado = subprocess.run(
+        [sys.executable, "-m", "capazeta.main"],
+        env=entorno,
+        input="",
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    salida = resultado.stdout + resultado.stderr
+
+    assert resultado.returncode == 1
+    assert "Falta la variable OPENAI_API_KEY" in salida
+    assert "Traceback" not in salida

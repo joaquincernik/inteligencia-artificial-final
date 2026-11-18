@@ -2,8 +2,7 @@ from langchain_core.messages import AIMessage, HumanMessage
 
 from capazeta import ui
 from capazeta.config import MODEL_NAME, THREAD_ID
-from capazeta.graph.builder import build_graph
-from capazeta.llm import LLMConnectionError
+from capazeta.llm import LLMConfigurationError, LLMConnectionError, validar_credenciales
 
 DIAGRAM_PATH = "docs/img/grafico.png"
 
@@ -24,7 +23,16 @@ def _content_to_text(content) -> str:
 
 
 def main():
-    graph = build_graph()
+    try:
+        validar_credenciales()
+        # El builder importa nodes.py, que crea el LLM al importar: hay que
+        # validar primero para que una key vacía no termine en traceback.
+        from capazeta.graph.builder import build_graph
+
+        graph = build_graph()
+    except LLMConfigurationError as exc:
+        ui.print_error(str(exc))
+        raise SystemExit(1) from None
 
     # Generar la imagen del diagrama de LangGraph
     try:
