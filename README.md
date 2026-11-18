@@ -170,6 +170,16 @@ A diferencia del conjunto inicial, el ampliado no registra notas por fila, así 
 
 ## 📈 Resultados
 
+Todas las evaluaciones del proyecto, con su muestra y su resultado principal:
+
+| Evaluación | Qué mide | Muestra | Resultado principal | Detalle |
+| :--- | :--- | :---: | :--- | :--- |
+| **Enrutamiento** | Clase elegida por el `router` | 30 prompts (10 por dominio) | Gemini 96,7 % vs. Groq 93,3 %; McNemar `p = 1,0` | [Evaluación cuantitativa del enrutamiento](#evaluación-cuantitativa-del-enrutamiento) |
+| **Retrieval · fase 1** | Hit@5 y MRR sobre alertas de Wazuh | 31 alertas / 17 técnicas | Gemini 67,74 % de Hit@5 | [Fase 1](#fase-1--dataset-inicial-n--31) |
+| **Retrieval · fase 2** | Hit@5 y MRR con dataset ampliado | 88 alertas / 36 técnicas | Gemini 67,05 % de Hit@5, IC [57,22 %, 76,87 %] | [Fase 2](#fase-2--dataset-ampliado-n--88) |
+| **Generación LLM** | Fidelidad, relevancia y acierto de técnica | 31 respuestas | 4,26/5 y 4,77/5; acierto 64,5 % | [Evaluación de generación LLM](#evaluación-de-generación-llm-fidelidad-y-relevancia) |
+| **Tests automáticos** | Allowlist de Nmap y reportes PDF | suite `pytest` | 50 passed, 1 skipped (test de red) | [Tests](#-tests) |
+
 ### Estado actual
 
 El sistema está implementado y validado de punta a punta: resuelve consultas de ciberseguridad con enrutamiento multi-agente, ejecuta herramientas reales, recupera técnicas MITRE mediante RAG y genera reportes. La validación combina pruebas cualitativas de las funcionalidades con evaluación cuantitativa de las tres decisiones críticas —**enrutamiento**, *retrieval* y generación LLM—, además de una suite automática de tests.
@@ -178,6 +188,8 @@ El sistema está implementado y validado de punta a punta: resuelve consultas de
 - **Herramientas activas:** Escaneo de red con Nmap (destino, puertos y flags validados contra una lista blanca), consulta de agentes/eventos/alertas desde Wazuh API/Indexer y generación automatizada de reportes en Markdown y PDF.
 - **RAG MITRE ATT&CK:** Recuperación semántica de técnicas y tácticas desde el bundle STIX sobre un índice vectorial FAISS, con embeddings de Gemini (por defecto) o Cloudflare Workers AI.
 - **Evaluación ampliada:** el dataset de retrieval pasó de 31 a 88 alertas (17 → 36 técnicas); Gemini mantuvo su Hit@5 en ~67 % y el margen de error cayó de ±16.45 a ±9.82 pp. Ver [Resultados](#-resultados).
+- **Evaluación de generación LLM:** fidelidad y relevancia anotadas en LangSmith sobre 31 respuestas, contrastadas con un juez independiente, más el acierto de la técnica principal. Ver [Evaluación de generación LLM](#evaluación-de-generación-llm-fidelidad-y-relevancia).
+- **Tests automáticos:** suite de `pytest` sobre la allowlist de Nmap y la generación de PDFs (50 pasan, 1 se omite por requerir red real). Ver [Tests](#-tests).
 - **Arquitectura modular:** Grafo LangGraph con bucles de tool-calling y persistencia en memoria (`InMemorySaver`).
 
 ### Evaluación cuantitativa del retrieval: dos fases
