@@ -135,6 +135,8 @@
             <span><span class="font-mono font-medium text-fg">67.05 %</span> Hit@5</span>
             <span class="hidden h-3.5 w-px bg-line sm:block" aria-hidden="true"></span>
             <span><span class="font-mono font-medium text-fg">57.22–76.87 %</span> IC 95 %</span>
+            <span class="hidden h-3.5 w-px bg-line sm:block" aria-hidden="true"></span>
+            <span><span class="font-mono font-medium text-fg">96.7 %</span> acierto del router</span>
           </div>
 
           <p class="mt-5 font-mono text-[11px] text-faint">Python 3.10+ · MIT · LangGraph + LangChain</p>
@@ -740,7 +742,160 @@
       <div class="container-x">
         <div data-reveal>
           <p class="section-kicker">Resultados</p>
-          <h2 class="section-title">Retrieval validado con 88 alertas reales</h2>
+          <h2 class="section-title">Evaluaciones cuantitativas del agente</h2>
+          <p class="lead">
+            Las tres decisiones críticas del sistema —enrutamiento, recuperación y generación— se miden
+            con ground truth propio, experimentos en LangSmith y una suite automática de tests. Todas las
+            corridas usan una sola pasada, temperatura 0 y semilla fija 42; los intervalos son del 95 %
+            y las comparaciones entre modelos son pareadas.
+          </p>
+          <div class="mt-4 flex flex-wrap items-center gap-2">
+            <a class="chip chip-accent" href="#evaluacion-enrutamiento">Enrutamiento · 30 prompts</a>
+            <a class="chip" href="#evaluacion-retrieval">Retrieval · 88 alertas</a>
+            <a class="chip" href="#evaluacion-generacion">Generación · 31 respuestas</a>
+            <a class="chip" href="#evaluacion-tests">Tests automáticos</a>
+          </div>
+        </div>
+
+        <div class="card mt-6 overflow-hidden" data-reveal>
+          <div class="overflow-x-auto">
+            <table class="results-table w-full min-w-[760px] text-left">
+              <caption class="sr-only">Resumen de todas las evaluaciones cuantitativas del proyecto</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Evaluación</th>
+                  <th scope="col">Qué mide</th>
+                  <th scope="col" class="text-center">n</th>
+                  <th scope="col">Resultado principal</th>
+                  <th scope="col" class="text-right">Detalle</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong class="text-fg">Enrutamiento</strong></td>
+                  <td>Clase elegida por el router</td>
+                  <td class="text-center font-mono">30</td>
+                  <td>Gemini <strong class="text-accent">96,7 %</strong> · Groq 93,3 % · McNemar p = 1,0</td>
+                  <td class="text-right"><a class="text-muted transition hover:text-accent" href="#evaluacion-enrutamiento">ver ↗</a></td>
+                </tr>
+                <tr>
+                  <td><strong class="text-fg">Retrieval · fase 1</strong></td>
+                  <td>Hit@5 y MRR sobre alertas de Wazuh</td>
+                  <td class="text-center font-mono">31</td>
+                  <td>Gemini <strong class="text-accent">67,74 %</strong> Hit@5 · 17 técnicas</td>
+                  <td class="text-right"><a class="text-muted transition hover:text-accent" href="#evaluacion-retrieval">ver ↗</a></td>
+                </tr>
+                <tr>
+                  <td><strong class="text-fg">Retrieval · fase 2</strong></td>
+                  <td>Hit@5 y MRR con dataset ampliado y embeddings alternativos</td>
+                  <td class="text-center font-mono">88</td>
+                  <td>Gemini <strong class="text-accent">67,05 %</strong> Hit@5 · IC [57,22, 76,87]</td>
+                  <td class="text-right"><a class="text-muted transition hover:text-accent" href="#evaluacion-retrieval">ver ↗</a></td>
+                </tr>
+                <tr>
+                  <td><strong class="text-fg">Generación LLM</strong></td>
+                  <td>Fidelidad, relevancia y acierto de la técnica principal</td>
+                  <td class="text-center font-mono">31</td>
+                  <td>Fidelidad <strong class="text-accent">4,26/5</strong> · relevancia 4,77/5 · acierto 64,5 %</td>
+                  <td class="text-right"><a class="text-muted transition hover:text-accent" href="#evaluacion-generacion">ver ↗</a></td>
+                </tr>
+                <tr>
+                  <td><strong class="text-fg">Tests automáticos</strong></td>
+                  <td>Allowlist de Nmap y generación de reportes PDF</td>
+                  <td class="text-center font-mono">pytest</td>
+                  <td>Suite de regresión sobre herramientas y reportes</td>
+                  <td class="text-right"><a class="text-muted transition hover:text-accent" href="#evaluacion-tests">ver ↗</a></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="evaluacion-enrutamiento" class="mt-14 scroll-mt-24 border-t border-line/60 pt-16" data-reveal>
+          <p class="font-mono text-[11px] uppercase tracking-[0.2em] text-accent">01 / Enrutamiento</p>
+          <h3 class="mt-3 text-xl font-semibold tracking-tight text-fg">El router también se mide</h3>
+          <p class="lead">
+            El nodo que elige al especialista se evaluó aislado, sin ejecutar tools, RAG ni generación
+            final. Se usaron <strong>30 consultas, 10 por dominio activo</strong>, con temperatura 0,
+            semilla 42 y una sola corrida por modelo en LangSmith. La corrección señalaba que esta
+            decisión quedaba fuera de las mediciones; ya está cubierta.
+          </p>
+
+          <div class="mt-10 grid gap-4 sm:grid-cols-3" data-reveal>
+            <div class="card p-5">
+              <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-faint">Acierto · Gemini (activo)</p>
+              <p class="mt-2 font-mono text-4xl font-semibold tracking-tight text-accent">96.7<span class="text-xl text-accent/70"> %</span></p>
+              <p class="mt-1.5 text-xs text-muted">29/30 · IC 95 % [83,3, 99,4]</p>
+            </div>
+            <div class="card p-5">
+              <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-faint">Acierto · Groq (alternativo)</p>
+              <p class="mt-2 font-mono text-4xl font-semibold tracking-tight text-cyan">93.3<span class="text-xl text-cyan"> %</span></p>
+              <p class="mt-1.5 text-xs text-muted">28/30 · IC 95 % [78,7, 98,2]</p>
+            </div>
+            <div class="card p-5">
+              <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-faint">McNemar exacto</p>
+              <p class="mt-2 font-mono text-4xl font-semibold tracking-tight text-warn">p = 1,0</p>
+              <p class="mt-1.5 text-xs text-muted">b = 1, c = 0 · sin diferencia significativa</p>
+            </div>
+          </div>
+
+          <div class="card mt-6 overflow-hidden" data-reveal>
+            <div class="overflow-x-auto">
+              <table class="results-table w-full min-w-[760px] text-left">
+                <caption class="sr-only">Comparativa de los dos routers sobre 30 prompts</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Router</th>
+                    <th scope="col" class="text-center">n</th>
+                    <th scope="col" class="text-center">Acierto</th>
+                    <th scope="col" class="text-center">IC 95 % (Wilson)</th>
+                    <th scope="col" class="text-center">F1 macro</th>
+                    <th scope="col" class="text-center">Formato válido</th>
+                    <th scope="col" class="text-right">Latencia mediana</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="best-row">
+                    <td><strong>Gemini</strong> · google_genai:gemini-3.1-flash-lite</td>
+                    <td class="text-center font-mono">30</td>
+                    <td class="text-center font-mono font-semibold text-accent">29/30 (96,7 %)</td>
+                    <td class="text-center font-mono">[83,3, 99,4]</td>
+                    <td class="text-center font-mono">0,967</td>
+                    <td class="text-center font-mono">100 %</td>
+                    <td class="text-right font-mono">2,87 s</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Groq</strong> · openai/gpt-oss-120b</td>
+                    <td class="text-center font-mono">30</td>
+                    <td class="text-center font-mono">28/30 (93,3 %)</td>
+                    <td class="text-center font-mono">[78,7, 98,2]</td>
+                    <td class="text-center font-mono">0,947</td>
+                    <td class="text-center font-mono">96,7 %</td>
+                    <td class="text-right font-mono font-semibold text-fg">0,54 s</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <p class="mt-2 text-xs leading-relaxed text-faint">
+            Ambos aciertan el 100 % en <strong class="text-muted">infraestructura_redes</strong> y
+            <strong class="text-muted">soc_logs</strong>; el único error de decisión es la consulta sobre
+            «reglas de detección para Wazuh», clasificada como <strong class="text-muted">soc_logs</strong>
+            en vez de <strong class="text-muted">threat_intel</strong>. El segundo fallo de Groq fue un
+            <strong class="text-muted">429 por límite de tasa</strong>, no una decisión: descartándolo,
+            ambos quedan en 28/29 (96,6 %). Se reporta <strong class="text-muted">formato_valido</strong>
+            por separado porque <code>_extract_domain()</code> tiene un fallback silencioso a threat_intel.
+            Procedimiento y resultados en el
+            <a class="text-muted transition hover:text-accent" href="https://github.com/joaquincernik/inteligencia-artificial-final/blob/master/notebooks/10_evaluacion_routing.ipynb">notebook 10 ↗</a>,
+            el <a class="text-muted transition hover:text-accent" href="https://github.com/joaquincernik/inteligencia-artificial-final/blob/master/reports/evaluacion_routing_resumen.csv">resumen ↗</a> y la
+            <a class="text-muted transition hover:text-accent" href="https://github.com/joaquincernik/inteligencia-artificial-final/blob/master/reports/evaluacion_routing_comparacion.csv">comparación pareada ↗</a>.
+          </p>
+        </div>
+
+        <div id="evaluacion-retrieval" class="mt-14 scroll-mt-24 border-t border-line/60 pt-16" data-reveal>
+          <p class="font-mono text-[11px] uppercase tracking-[0.2em] text-accent">02 / Retrieval</p>
+          <h3 class="mt-3 text-xl font-semibold tracking-tight text-fg">Retrieval validado con 88 alertas reales</h3>
           <p class="lead">
             Tras la corrección, el dataset se amplió de <strong>31 a 88 alertas reales de Wazuh</strong>
             y de 17 a <strong>36 técnicas MITRE ATT&amp;CK distintas</strong>. Al casi triplicar la
@@ -754,9 +909,8 @@
             <span class="font-mono text-xs text-faint">→</span>
             <span class="chip chip-accent">Fase 2 · 88 alertas · 36 técnicas</span>
           </div>
-        </div>
 
-        <div class="mt-10 grid gap-4 sm:grid-cols-3" data-reveal>
+          <div class="mt-10 grid gap-4 sm:grid-cols-3" data-reveal>
           <div class="card p-5">
             <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-faint">Hit@5 · dataset ampliado</p>
             <p class="mt-2 font-mono text-4xl font-semibold tracking-tight text-accent">67.05<span class="text-xl text-accent/70"> %</span></p>
@@ -889,7 +1043,18 @@
           sobre ellos es concluyente (sí se solapa con Qwen3, por lo que ese orden es tendencia).
           Plamo embedding-1b se excluyó de la comparación porque solo procesó 14 de las 31 alertas.
           Procedimiento y resultados completos en el
-          <a class="text-muted transition hover:text-accent" href="https://github.com/joaquincernik/inteligencia-artificial-final/blob/main/notebooks/08_evaluacion_rag_dataset_ampliado.ipynb">notebook 08 ↗</a>.
+          <a class="text-muted transition hover:text-accent" href="https://github.com/joaquincernik/inteligencia-artificial-final/blob/master/notebooks/08_evaluacion_rag_dataset_ampliado.ipynb">notebook 08 ↗</a>.
+        </p>
+
+        <p class="mt-3 text-xs leading-relaxed text-faint">
+          Los cuatro sistemas se evaluaron sobre <strong class="text-muted">las mismas 88 alertas</strong>,
+          así que la comparación también se hizo de forma <strong class="text-muted">pareada por alerta</strong>
+          (36 técnicas, 15 con una sola alerta): <strong class="text-muted">McNemar exacto</strong> para el
+          acierto binario Hit@5 y <strong class="text-muted">Wilcoxon</strong> para el MRR. Gemini supera de
+          forma significativa a Qwen3 (p = 0.00408 / 0.00200), a BGE (p = 2.74 × 10⁻⁵ / 0.000156) y a
+          TF-IDF (p = 1.08 × 10⁻⁹ / 1.13 × 10⁻⁹), en Hit@5 y MRR respectivamente; Qwen3 vs BGE no muestra
+          evidencia de diferencia (p = 0.118 / 0.126). Los seis pares están en el
+          <a class="text-muted transition hover:text-accent" href="https://github.com/joaquincernik/inteligencia-artificial-final/blob/master/reports/evaluacion_pareada_ampliado.csv">CSV de comparación pareada ↗</a>.
         </p>
 
         <figure class="mt-8" data-reveal>
@@ -905,6 +1070,104 @@
             Los resultados del dataset ampliado (88 alertas) están en la tabla superior y en el notebook 08.
           </figcaption>
         </figure>
+        </div>
+
+        <div id="evaluacion-generacion" class="mt-14 scroll-mt-24 border-t border-line/60 pt-16" data-reveal>
+          <p class="font-mono text-[11px] uppercase tracking-[0.2em] text-accent">03 / Generación LLM</p>
+          <h3 class="mt-3 text-xl font-semibold tracking-tight text-fg">Respuestas fundamentadas y accionables</h3>
+          <p class="lead">
+            La respuesta final se evaluó sobre las <strong>31 alertas de la fase 1</strong>, reutilizando el
+            Top 5 recuperado por Gemini como contexto fijo. La anotación principal la hizo el autor con una
+            rúbrica de 1 a 5 y se contrastó con un <strong>juez LLM independiente</strong> (Groq
+            <code>openai/gpt-oss-120b</code>). No se repitió sobre las 88 alertas del dataset ampliado:
+            generar y juzgar esas 88 respuestas supondrían unas 176 llamadas y <strong class="text-muted">agotarían
+            el presupuesto de tokens disponible</strong>, por lo que esa corrida queda como trabajo futuro.
+          </p>
+
+          <div class="mt-10 grid gap-4 sm:grid-cols-3" data-reveal>
+            <div class="card p-5">
+              <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-faint">Fidelidad</p>
+              <p class="mt-2 font-mono text-4xl font-semibold tracking-tight text-accent">4.26<span class="text-xl text-accent/70"> /5</span></p>
+              <p class="mt-1.5 text-xs text-muted">IC 95 % [3,93, 4,59] · 25/31 con ≥ 4</p>
+            </div>
+            <div class="card p-5">
+              <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-faint">Relevancia</p>
+              <p class="mt-2 font-mono text-4xl font-semibold tracking-tight text-cyan">4.77<span class="text-xl text-cyan"> /5</span></p>
+              <p class="mt-1.5 text-xs text-muted">IC 95 % [4,58, 4,97] · 29/31 con ≥ 4</p>
+            </div>
+            <div class="card p-5">
+              <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-faint">Acierto de técnica principal</p>
+              <p class="mt-2 font-mono text-4xl font-semibold tracking-tight text-warn">64.5<span class="text-xl text-warn/70"> %</span></p>
+              <p class="mt-1.5 text-xs text-muted">20/31 · 95 % si el RAG la recuperó, 0 % si no</p>
+            </div>
+          </div>
+
+          <div class="card mt-6 overflow-hidden" data-reveal>
+            <div class="overflow-x-auto">
+              <table class="results-table w-full min-w-[760px] text-left">
+                <caption class="sr-only">Anotación humana y juez independiente sobre 31 respuestas</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Dimensión</th>
+                    <th scope="col" class="text-center">n</th>
+                    <th scope="col" class="text-center">Media 1–5</th>
+                    <th scope="col" class="text-center">IC 95 %</th>
+                    <th scope="col" class="text-center">≥ 4</th>
+                    <th scope="col">Acuerdo con el juez Groq</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong class="text-fg">Fidelidad</strong></td>
+                    <td class="text-center font-mono">31</td>
+                    <td class="text-center font-mono">4,26</td>
+                    <td class="text-center font-mono">[3,93, 4,59]</td>
+                    <td class="text-center font-mono">25/31</td>
+                    <td>Exacto 61,3 % · tolerancia ±1 96,8 % · kappa lineal 0,595</td>
+                  </tr>
+                  <tr>
+                    <td><strong class="text-fg">Relevancia</strong></td>
+                    <td class="text-center font-mono">31</td>
+                    <td class="text-center font-mono">4,77</td>
+                    <td class="text-center font-mono">[4,58, 4,97]</td>
+                    <td class="text-center font-mono">29/31</td>
+                    <td>Exacto 83,9 %, pero el juez dio 5 a las 31: kappa 0, sin evidencia de acuerdo</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <p class="mt-2 text-xs leading-relaxed text-faint">
+            El acierto de la técnica principal es la métrica más honesta de extremo a extremo: depende de
+            que el retrieval haya incluido la técnica correcta. Un juez LLM no reemplaza a un segundo
+            anotador humano y tiene sesgos propios, así que el acuerdo se reporta como preliminar.
+            Procedimiento y resultados en el
+            <a class="text-muted transition hover:text-accent" href="https://github.com/joaquincernik/inteligencia-artificial-final/blob/master/notebooks/07_evaluacion_llm.ipynb">notebook 07 ↗</a>,
+            el <a class="text-muted transition hover:text-accent" href="https://github.com/joaquincernik/inteligencia-artificial-final/blob/master/reports/evaluacion_llm_resumen.csv">resumen ↗</a> y el
+            <a class="text-muted transition hover:text-accent" href="https://github.com/joaquincernik/inteligencia-artificial-final/blob/master/reports/evaluacion_llm_acuerdo.csv">acuerdo ↗</a>.
+          </p>
+        </div>
+
+        <div id="evaluacion-tests" class="mt-14 scroll-mt-24 border-t border-line/60 pt-16" data-reveal>
+          <p class="font-mono text-[11px] uppercase tracking-[0.2em] text-accent">04 / Verificación automática</p>
+          <h3 class="mt-3 text-xl font-semibold tracking-tight text-fg">Tests automáticos de las herramientas</h3>
+          <p class="lead">
+            La suite de <code>pytest</code> cubre la allowlist de Nmap (scripts, inyecciones y flags
+            peligrosos) y la generación de reportes Markdown y PDF. Se ejecuta con
+            <code>uv run pytest -q</code>: 50 pruebas pasan y una se omite porque requiere un objetivo
+            de red real. El detalle está en la sección de Tests del README.
+          </p>
+          <div class="mt-4 flex flex-wrap items-center gap-2">
+            <span class="chip">Allowlist de Nmap</span>
+            <span class="chip">Reportes PDF</span>
+            <span class="chip chip-cyan">pytest · uv</span>
+          </div>
+          <p class="mt-4 text-xs leading-relaxed text-faint">
+            Comandos y cobertura en el
+            <a class="text-muted transition hover:text-accent" href="https://github.com/joaquincernik/inteligencia-artificial-final/blob/master/README.md#tests">README · Tests ↗</a>.
+          </p>
+        </div>
       </div>
     </section>
 
@@ -950,7 +1213,7 @@
       </p>
       <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs">
         <a class="text-muted transition hover:text-accent" href="https://github.com/joaquincernik/inteligencia-artificial-final">Código fuente</a>
-        <a class="text-muted transition hover:text-accent" href="https://github.com/joaquincernik/inteligencia-artificial-final/blob/main/LICENSE">Licencia MIT</a>
+        <a class="text-muted transition hover:text-accent" href="https://github.com/joaquincernik/inteligencia-artificial-final/blob/master/LICENSE">Licencia MIT</a>
         <a class="text-muted transition hover:text-accent" href="#top">Volver arriba ↑</a>
       </div>
     </div>

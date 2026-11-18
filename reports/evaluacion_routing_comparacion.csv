@@ -1,0 +1,2 @@
+﻿n_pareado,accuracy_gemini,accuracy_groq,diferencia_gemini_menos_groq,gemini_acierta_groq_falla,groq_acierta_gemini_falla,p_mcnemar
+30,0.9667,0.9333,0.0333,1,0,1.0
