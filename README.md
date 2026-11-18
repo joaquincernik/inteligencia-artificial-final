@@ -21,7 +21,11 @@
   - [Construido con](#construido-con)
 - [El dataset](#-el-dataset)
 - [Metodología](#-metodología)
+  - [Recorrido del trabajo por notebooks](#recorrido-del-trabajo-por-notebooks)
+  - [Robustez ante fallos del LLM](#robustez-ante-fallos-del-llm-trabajo-en-master)
 - [Resultados](#-resultados)
+  - [Retrieval: dos fases](#evaluación-cuantitativa-del-retrieval-dos-fases)
+  - [Comparación pareada (n = 88)](#comparación-pareada-n--88)
 - [Estructura del proyecto](#-estructura-del-proyecto)
 - [Instalación](#-instalación)
 - [Integración con Wazuh (Docker)](#integración-con-wazuh-docker)
@@ -38,7 +42,7 @@
 
 ![Diagrama del flujo de agentes](docs/img/grafico.png)
 
-Capazeta se ejecuta de forma interactiva a través de una interfaz de línea de comandos (CLI) impulsada por `uv run capazeta`.
+Capazeta se ejecuta de forma interactiva a través de una interfaz de línea de comandos (CLI) impulsada por `uv run capazeta`. Los recorridos cualitativos están en dos notebooks: [`notebooks/01_demo_MVP.ipynb`](notebooks/01_demo_MVP.ipynb) muestra el MVP —enrutamiento, uso de herramientas y consulta directa al RAG— y [`notebooks/05_demo_trabajo_final.ipynb`](notebooks/05_demo_trabajo_final.ipynb) repite los tres recorridos (`infraestructura_redes`, `threat_intel` y `soc_logs`) sobre la versión final, con *tools hardening* y reportes.
 
 ---
 
@@ -52,7 +56,7 @@ El sistema organiza sus capacidades en 3 nodos de subagentes especializados, coo
 2. **SOC / Logs y Eventos:** Análisis de SIEM, triaje de incidentes e integración con alertas de Wazuh.
 3. **Threat Intelligence:** Mapeo de TTPs en MITRE ATT&CK mediante RAG (FAISS) e investigación de IOCs/CVEs.
 
-Las verticales de **Aplicaciones Web y APIs**, **Mobile** y **OT/ICS** quedan fuera de esta iteración: están comentadas en el grafo a la espera de contar con herramientas propias.
+Las verticales de **Aplicaciones Web y APIs**, **Mobile** y **OT/ICS** quedan fuera de esta iteración: están comentadas en el grafo a la espera de contar con herramientas propias. La decisión de acotar el alcance y las mejoras del MVP quedan registradas en [`notebooks/04_implementacion_roadmap.ipynb`](notebooks/04_implementacion_roadmap.ipynb).
 
 ### Contexto académico
 
@@ -105,6 +109,26 @@ Para la evaluación del **enrutamiento** se construyó un dataset separado y bal
 
 ## 🔬 Metodología
 
+### Recorrido del trabajo por notebooks
+
+El trabajo se desarrolló en once notebooks encadenados. Esta tabla permite seguir el recorrido completo y encontrar en qué sección del README se reporta cada resultado:
+
+| Etapa | Notebook | Aporte | Resultado en este README |
+| :--- | :--- | :--- | :--- |
+| 00 · Puesta en marcha | [`00_init_proyecto.ipynb`](notebooks/00_init_proyecto.ipynb) | Clonado, entorno con `uv`, `.env`, primer arranque y stack Wazuh | [Instalación](#-instalación) |
+| 01 · Demo del MVP | [`01_demo_MVP.ipynb`](notebooks/01_demo_MVP.ipynb) | Enrutamiento, tools y RAG en la versión inicial | [Demo](#-demo) |
+| 02 · Evaluación del RAG | [`02_evaluacion_rag.ipynb`](notebooks/02_evaluacion_rag.ipynb) | Ground truth de 31 alertas y evaluación con LangSmith | [Fase 1](#fase-1--dataset-inicial-n--31) |
+| 03 · Embeddings alternativos | [`03_evaluacion_modelos_embedding.ipynb`](notebooks/03_evaluacion_modelos_embedding.ipynb) | Qwen3, BGE y TF-IDF; intervalos y prueba pareada | [Fase 1](#fase-1--dataset-inicial-n--31) |
+| 04 · Alcance del trabajo final | [`04_implementacion_roadmap.ipynb`](notebooks/04_implementacion_roadmap.ipynb) | Decisión de acotar verticales y mejoras del MVP | [Sobre el proyecto](#-sobre-el-proyecto) |
+| 05 · Demo final | [`05_demo_trabajo_final.ipynb`](notebooks/05_demo_trabajo_final.ipynb) | Tools hardening, reportes y RAG en las tres verticales | [Demo](#-demo) |
+| 06 · Mejoras y CI | [`06_mejoras_trabajo_final.ipynb`](notebooks/06_mejoras_trabajo_final.ipynb) | Tests, GitHub Actions, técnicas vigentes y TF-IDF | [Tests](#-tests) |
+| 07 · Generación LLM | [`07_evaluacion_llm.ipynb`](notebooks/07_evaluacion_llm.ipynb) | Fidelidad, relevancia, juez independiente y acierto de técnica | [Evaluación de generación LLM](#evaluación-de-generación-llm-fidelidad-y-relevancia) |
+| 08 · Dataset ampliado | [`08_evaluacion_rag_dataset_ampliado.ipynb`](notebooks/08_evaluacion_rag_dataset_ampliado.ipynb) | Generación de eventos, export y evaluación de 88 alertas | [Fase 2](#fase-2--dataset-ampliado-n--88) |
+| 09 · Reintento del LLM | [`09_retry_fallo_conexion_llm.ipynb`](notebooks/09_retry_fallo_conexion_llm.ipynb) | Demo documentada del manejo de fallos de conexión | [Robustez ante fallos del LLM](#robustez-ante-fallos-del-llm-trabajo-en-master) |
+| 10 · Evaluación del router | [`10_evaluacion_routing.ipynb`](notebooks/10_evaluacion_routing.ipynb) | 30 prompts, IC de Wilson y McNemar | [Evaluación cuantitativa del enrutamiento](#evaluación-cuantitativa-del-enrutamiento) |
+
+Los notebooks 01 y 05 son demos cualitativas; el 04 registra por qué se descartaron las verticales sin herramientas propias. El 09 se trata por separado porque el código que documenta pertenece a otra línea de trabajo, como se explica más abajo.
+
 ### Arquitectura Multi-Agente
 
 Capazeta implementa un grafo direccionado de estados (`StateGraph`) respaldado por persistencia en memoria (`InMemorySaver`):
@@ -136,6 +160,12 @@ Por defecto se usan embeddings de Gemini (`models/gemini-embedding-001`). Tambi�
 ### Reproducibilidad
 
 Las llamadas al LLM usan `temperature=0.0` y una semilla fija (`LLM_SEED=42`) para reducir la variabilidad entre ejecuciones. Ambos valores se pueden sobrescribir desde el `.env` con `LLM_TEMPERATURE` y `LLM_SEED`. La semilla se aplica en los proveedores que la exponen de forma nativa (Google Gemini y OpenAI) y se pasa como parámetro del modelo en Groq. El retrieval con FAISS y el baseline TF-IDF son deterministas. Aun así, las evaluaciones se reportan como una sola corrida sin repeticiones: la temperatura y la semilla reducen el ruido, pero no permiten separar la variabilidad del proveedor de la del dataset.
+
+### Robustez ante fallos del LLM (trabajo en `master`)
+
+El notebook [`notebooks/09_retry_fallo_conexion_llm.ipynb`](notebooks/09_retry_fallo_conexion_llm.ipynb) documenta una mejora surgida de una pregunta del docente durante la exposición: qué hacer si falla la conexión con el modelo. La estrategia es reintentar hasta **3 veces con backoff exponencial** ante errores de red, timeout o del proveedor, y si el error persiste mostrar un mensaje claro en la CLI en lugar de un traceback. La clave de API se valida al arrancar, sin imprimirla, y el notebook incluye dos casos ejecutados: una clave inválida (401, sin consumo de tokens) y una cuenta sin créditos (429).
+
+**Alcance y honestidad:** esta implementación pertenece a la línea de trabajo de `master` (commits `54100f1`, `7cf4c61` y `016604b`). El notebook quedó incorporado a esta entrega, pero los objetos que documenta —`invoke_with_retry()`, `LLMConnectionError` y `tests/test_llm_retry.py`— **no están presentes en esta rama**: acá no hay código de reintento ni ese archivo de tests. Por eso se reporta como trabajo realizado en otra línea, no como funcionalidad verificada en el estado actual del repositorio. El traslado a esta rama queda como [ítem pendiente del roadmap](#-roadmap).
 
 ### Ground truth de la evaluación RAG
 
@@ -185,7 +215,7 @@ Todas las evaluaciones del proyecto, con su muestra y su resultado principal:
 El sistema está implementado y validado de punta a punta: resuelve consultas de ciberseguridad con enrutamiento multi-agente, ejecuta herramientas reales, recupera técnicas MITRE mediante RAG y genera reportes. La validación combina pruebas cualitativas de las funcionalidades con evaluación cuantitativa de las tres decisiones críticas —**enrutamiento**, *retrieval* y generación LLM—, además de una suite automática de tests.
 
 - **Enrutamiento multi-agente:** Clasificación correcta de las consultas hacia los 3 dominios de especialidad activos, medida cuantitativamente sobre 30 prompts en [`notebooks/10_evaluacion_routing.ipynb`](notebooks/10_evaluacion_routing.ipynb). Ver [Evaluación cuantitativa del enrutamiento](#evaluación-cuantitativa-del-enrutamiento).
-- **Herramientas activas:** Escaneo de red con Nmap (destino, puertos y flags validados contra una lista blanca), consulta de agentes/eventos/alertas desde Wazuh API/Indexer y generación automatizada de reportes en Markdown y PDF.
+- **Herramientas activas:** Escaneo de red con Nmap (destino, puertos y flags validados contra una lista blanca), consulta de agentes/eventos/alertas desde Wazuh API/Indexer y generación automatizada de reportes en Markdown y PDF. La demostración de estos tres recorridos está en [`notebooks/05_demo_trabajo_final.ipynb`](notebooks/05_demo_trabajo_final.ipynb).
 - **RAG MITRE ATT&CK:** Recuperación semántica de técnicas y tácticas desde el bundle STIX sobre un índice vectorial FAISS, con embeddings de Gemini (por defecto) o Cloudflare Workers AI.
 - **Evaluación ampliada:** el dataset de retrieval pasó de 31 a 88 alertas (17 → 36 técnicas); Gemini mantuvo su Hit@5 en ~67 % y el margen de error cayó de ±16.45 a ±9.82 pp. Ver [Resultados](#-resultados).
 - **Evaluación de generación LLM:** fidelidad y relevancia anotadas en LangSmith sobre 31 respuestas, contrastadas con un juez independiente, más el acierto de la técnica principal. Ver [Evaluación de generación LLM](#evaluación-de-generación-llm-fidelidad-y-relevancia).
@@ -214,7 +244,7 @@ Se evaluó sobre **31 alertas reales de Wazuh** (25 reglas únicas, 17 técnicas
 | **Baseline (TF-IDF)** | Léxico tradicional / algorítmico | 31 | **32.26 %** | [15.80 %, 48.71 %] | **0.2258** | **2.6 ms** |
 
 
-**Intervalos de confianza y alcance del experimento:** cada modelo se evaluó en **una sola corrida**, sin repeticiones. El dataset tiene **31 alertas que cubren 17 técnicas MITRE distintas** (25 reglas únicas), por lo que los números son frágiles. El IC del 95 % se calculó con la aproximación normal (Wald): `p ± 1.96·sqrt(p(1−p)/n)`, donde `p` es el Hit@5 observado y `n` = 31 alertas para todos los modelos reportados. **Para comparar modelos se usa además una prueba pareada por alerta (Wilcoxon signed-rank) en lugar de apoyarse únicamente en los intervalos de Wald:** Wald resume el Hit@5 con una única varianza global y pierde poder cuando el ground truth es desbalanceado — el dataset ampliado tiene 36 técnicas MITRE y **15 de ellas tienen una sola alerta**. Como los cuatro modelos se evaluaron sobre las mismas 88 alertas, la prueba pareada compara sus diferencias de acierto dentro de cada alerta, cancelando la dificultad inherente de cada técnica y dando una comparación más honesta (detalles en el notebook 03). Por eso el IC de Gemini va de **51.29 % a 84.20 %** (redondeado, 52 %–84 %) y se superpone con los de Qwen3 y BGE: la ventaja observada es **indicativa**, no concluyente. **Plamo embedding-1b se excluyó de la comparación** porque solo procesó 14 de las 31 alertas; sus resultados no son comparables con los demás. Esta limitación se abordó en la Fase 2, con un dataset casi tres veces más grande.
+**Intervalos de confianza y alcance del experimento:** cada modelo se evaluó en **una sola corrida**, sin repeticiones. El dataset tiene **31 alertas que cubren 17 técnicas MITRE distintas** (25 reglas únicas), por lo que los números son frágiles. El IC del 95 % se calculó con la aproximación normal (Wald): `p ± 1.96·sqrt(p(1−p)/n)`, donde `p` es el Hit@5 observado y `n` = 31 alertas para todos los modelos reportados. Por eso el IC de Gemini va de **51.29 % a 84.20 %** (redondeado, 52 %–84 %) y se superpone con los de Qwen3 y BGE: en esta fase la ventaja observada es **indicativa**, no concluyente. **Plamo embedding-1b se excluyó de la comparación** porque solo procesó 14 de las 31 alertas; sus resultados no son comparables con los demás. La comparación pareada por alerta —más adecuada que los intervalos marginales cuando el ground truth está desbalanceado— se reporta en [Fase 2](#fase-2--dataset-ampliado-n--88), sobre las 88 alertas.
 
 **Lectura de los resultados:** el mejor modelo semántico (Gemini embedding-001) mejora el baseline léxico TF-IDF en **+35.48 puntos porcentuales de Hit@5** y más que duplica el MRR (0.4866 vs. 0.2258). El costo es la latencia: 636.4 ms frente a 2.6 ms del baseline. La diferencia contra TF-IDF es la más clara (los intervalos no se solapan), mientras que entre los modelos semánticos el orden debe tomarse como tendencia.
 
@@ -235,9 +265,29 @@ Para reducir la fragilidad estadística de la fase 1 se amplió el ground truth 
 
 **Lectura de los resultados:** el hallazgo central es que Gemini **mantuvo su rendimiento** al casi triplicar la muestra: 67.74 % → 67.05 % (**−0.7 pp**). En cambio, los baseline cayeron (TF-IDF −3.85 pp, BGE −9.56 pp, Qwen3 −4.84 pp), lo que confirma que el buen resultado inicial de Gemini no era un artefacto de la muestra pequeña. Gemini supera al baseline léxico por **+38.64 pp de Hit@5** y más que triplica el MRR (0.4657 vs. 0.1544), con una latencia de 529.8 ms frente a 2.7 ms de TF-IDF (aceptable en un flujo de triaje asíncrono del SOC).
 
-**Intervalos de confianza:** al pasar de n = 31 a n = 88, el margen de error de Gemini se redujo de **±16.45 pp a ±9.82 pp**. Su IC 95 % **[57.22 %, 76.87 %] no se solapa** con el de TF-IDF [18.99 %, 37.83 %] ni con el de BGE [31.73 %, 52.36 %], así que la ventaja sobre esos dos sistemas ahora es **concluyente** (en la fase 1 solo era indicativa). Sí se solapa con Qwen3 [39.55 %, 60.45 %], por lo que el orden entre Gemini y Qwen3 sigue leyéndose como tendencia. **Plamo embedding-1b** vuelve a quedar fuera: en la fase 1 solo procesó 14 de 31 alertas y en esta fase no se repitió su evaluación.
+**Intervalos de confianza:** al pasar de n = 31 a n = 88, el margen de error de Gemini se redujo de **±16.45 pp a ±9.82 pp**. Su IC 95 % **[57.22 %, 76.87 %] no se solapa** con el de TF-IDF [18.99 %, 37.83 %] ni con el de BGE [31.73 %, 52.36 %], así que la ventaja sobre esos dos sistemas ahora es **concluyente** (en la fase 1 solo era indicativa). Sí se solapa con Qwen3 [39.55 %, 60.45 %], pero ese intervalo marginal no tiene en cuenta que es **la misma alerta** la que se compara en ambos sistemas: la [comparación pareada](#comparación-pareada-n--88) de más abajo detecta una diferencia significativa. **Plamo embedding-1b** vuelve a quedar fuera: en la fase 1 solo procesó 14 de 31 alertas y en esta fase no se repitió su evaluación.
 
 La anotación del conjunto ampliado no incluye notas por fila, así que se mantiene el criterio conservador de una sola técnica de referencia por alerta. El análisis completo está en [`notebooks/08_evaluacion_rag_dataset_ampliado.ipynb`](notebooks/08_evaluacion_rag_dataset_ampliado.ipynb); el ground truth en [`tests/dataset_evaluacion_langsmith_ampliado.csv`](tests/dataset_evaluacion_langsmith_ampliado.csv) y las salidas crudas de LangSmith en [`reports/evaluacion_capazeta_rag_ampliado_gemini-embedding-001.csv`](reports/evaluacion_capazeta_rag_ampliado_gemini-embedding-001.csv), [`reports/evaluacion_dataset_ampliado_capazeta_rag_qwen3-embedding-0.6b.csv`](reports/evaluacion_dataset_ampliado_capazeta_rag_qwen3-embedding-0.6b.csv), [`reports/evaluacion_dataset_ampliado_capazeta_rag_bge-large-en-v1.5.csv`](reports/evaluacion_dataset_ampliado_capazeta_rag_bge-large-en-v1.5.csv) y [`reports/evaluacion_capazeta_ampliado_tf_idf.csv`](reports/evaluacion_capazeta_ampliado_tf_idf.csv).
+
+##### Comparación pareada (n = 88)
+
+Los intervalos de Wald de la tabla anterior tratan cada alerta como independiente y resumen el Hit@5 con una varianza global. Eso es problemático aquí: el ground truth ampliado tiene **36 técnicas MITRE distintas y 15 de ellas tienen una sola alerta**, de modo que la dificultad no es homogénea. Como los cuatro sistemas se evaluaron sobre **las mismas 88 alertas** (`example_id` compartido), se pueden aparear las observaciones por alerta y comparar sus diferencias: al hacerlo se cancela la dificultad inherente de cada técnica, incluidas las 15 con un solo caso.
+
+Se usan dos pruebas complementarias según la naturaleza de la métrica:
+
+- **McNemar exacto** sobre el **Hit@5 binario** por alerta: cuenta cuántas alertas gana un sistema (`b`) y cuántas pierde (`c`) frente al otro. Es la prueba pareada correcta para aciertos sí/no; aplicar Wilcoxon a una variable binaria no es adecuado.
+- **Wilcoxon de rangos con signo** sobre el **MRR** por alerta: el MRR es una métrica continua/ordinal, así que sus diferencias apareadas sí se analizan con este test.
+
+| Par comparado | b (gana A) | c (gana B) | p McNemar (Hit@5) | Δ MRR medio | p Wilcoxon (MRR) |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| Gemini embedding-001 vs Qwen3 embedding-0.6b | 20 | 5 | **0,00408** | +0,1218 | **0,00200** |
+| Gemini embedding-001 vs BGE-Large-EN-v1.5 | 25 | 3 | **2,74 × 10⁻⁵** | +0,1795 | **0,000156** |
+| Gemini embedding-001 vs TF-IDF | 35 | 1 | **1,08 × 10⁻⁹** | +0,3114 | **1,13 × 10⁻⁹** |
+| Qwen3 embedding-0.6b vs BGE-Large-EN-v1.5 | 11 | 4 | 0,118 | +0,0578 | 0,126 |
+| Qwen3 embedding-0.6b vs TF-IDF | 24 | 5 | **0,000546** | +0,1896 | **1,39 × 10⁻⁵** |
+| BGE-Large-EN-v1.5 vs TF-IDF | 17 | 5 | **0,0169** | +0,1318 | **0,000168** |
+
+**Lectura:** la ventaja de Gemini sobre Qwen3, BGE y TF-IDF es estadísticamente significativa en las dos métricas (p < 0,01), incluso contra Qwen3, cuyos intervalos de Wald se solapaban. Qwen3 vs BGE no muestra evidencia de diferencia (p ≈ 0,12 en ambos tests): su orden no puede afirmarse con estos datos. El resto de los pares, incluidos los dos contra TF-IDF, también son significativos (p < 0,05). Las pruebas son bilaterales, sobre 88 pares apareados y una sola corrida por sistema; los cálculos son reproducibles desde [`reports/evaluacion_pareada_ampliado.csv`](reports/evaluacion_pareada_ampliado.csv) y desde la celda correspondiente de [`notebooks/03_evaluacion_modelos_embedding.ipynb`](notebooks/03_evaluacion_modelos_embedding.ipynb).
 
 ### Evaluación de generación LLM (fidelidad y relevancia)
 
@@ -354,6 +404,8 @@ source .venv/bin/activate  # En Windows: .venv\Scripts\activate
 uv sync
 uv pip install -e .
 ```
+
+> **Guía visual:** el notebook [`notebooks/00_init_proyecto.ipynb`](notebooks/00_init_proyecto.ipynb) recorre estos mismos pasos —clonado, entorno, variables de entorno, Wazuh con Docker y primera ejecución— con capturas de pantalla.
 
 ### Configuración de Variables de Entorno
 
@@ -592,6 +644,7 @@ El target se valida con `_validate_target` y los flags con la misma allowlist qu
 - [x] **Evaluación cuantitativa del enrutamiento:** 30 prompts balanceados (10 por dominio activo) evalúan solo la decisión del router con Gemini y Groq: 96,7 % vs. 93,3 % de acierto, IC de Wilson, matriz de confusión y McNemar exacto (p = 1,0, sin diferencia significativa). Ver [Evaluación cuantitativa del enrutamiento](#evaluación-cuantitativa-del-enrutamiento).
 
 ### Mejoras propuestas para futuros proyectos
+- [ ] **Portar el reintento ante fallos del LLM a esta rama:** la implementación y sus tests existen hoy en `master`; ver [Robustez ante fallos del LLM](#robustez-ante-fallos-del-llm-trabajo-en-master). Falta traer `invoke_with_retry()` y su test, y verificarlos con la suite de esta rama.
 - [ ] **Robustecer y ampliar la evaluación del router:** repetir las 30 consultas con varias corridas y reintento ante errores 429, sumar casos límite que desambiguen «reglas de detección» de «consulta de alertas» y extender el dataset cuando se reactiven otras verticales. La corrida actual no permite distinguir significativamente a Gemini de Groq (`p = 1,0`).
 - [ ] **Repetir la doble evaluación de generación LLM sobre el dataset ampliado:** la fidelidad y relevancia de [`notebooks/07_evaluacion_llm.ipynb`](notebooks/07_evaluacion_llm.ipynb) —anotador humano y juez independiente— se midieron solo sobre las 31 alertas iniciales; falta correr la misma rúbrica sobre las 88 para completar la evaluación de extremo a extremo en la Fase 2.
 - [ ] **Ground truth multi-etiqueta:** registrar todas las técnicas MITRE válidas por alerta y adaptar `mitre_retrieval_evaluator` para aceptar cualquiera de ellas; hoy las alternativas están en `notes` pero no se acreditan.
