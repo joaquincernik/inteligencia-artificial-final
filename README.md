@@ -99,6 +99,8 @@ La evaluación del retrieval se realizó en dos fases sobre alertas reales de Wa
 
 El conjunto ampliado se construyó para reducir la fragilidad estadística del inicial. La generación de las alertas, su exportación desde Wazuh y la clasificación por `mitre_id` se detallan en [Dataset ampliado: generación y clasificación de alertas](#dataset-ampliado-generación-y-clasificación-de-alertas) y en [`notebooks/08_evaluacion_rag_dataset_ampliado.ipynb`](notebooks/08_evaluacion_rag_dataset_ampliado.ipynb).
 
+Para la evaluación del **enrutamiento** se construyó un dataset separado y balanceado: 30 consultas en lenguaje natural, 10 por cada dominio activo (`infraestructura_redes`, `soc_logs`, `threat_intel`), sin nombrar la clase esperada en el enunciado. Está en [`tests/dataset_evaluacion_routing.csv`](tests/dataset_evaluacion_routing.csv) y se subió a LangSmith como `Evaluacion_Routing_Capazeta`; no se reutilizó el dataset `routing` previo porque contenía dominios hoy desactivados (`web_apis`, `mobile`).
+
 ---
 
 ## 🔬 Metodología
@@ -170,9 +172,9 @@ A diferencia del conjunto inicial, el ampliado no registra notas por fila, así 
 
 ### Estado actual
 
-El sistema está implementado y validado de punta a punta: resuelve consultas de ciberseguridad con enrutamiento multi-agente, ejecuta herramientas reales, recupera técnicas MITRE mediante RAG y genera reportes. La validación combina pruebas cualitativas de las funcionalidades con evaluación cuantitativa del retrieval y de la generación LLM, además de una suite automática de tests.
+El sistema está implementado y validado de punta a punta: resuelve consultas de ciberseguridad con enrutamiento multi-agente, ejecuta herramientas reales, recupera técnicas MITRE mediante RAG y genera reportes. La validación combina pruebas cualitativas de las funcionalidades con evaluación cuantitativa de las tres decisiones críticas —**enrutamiento**, *retrieval* y generación LLM—, además de una suite automática de tests.
 
-- **Enrutamiento multi-agente:** Clasificación correcta de las consultas hacia los 3 dominios de especialidad activos.
+- **Enrutamiento multi-agente:** Clasificación correcta de las consultas hacia los 3 dominios de especialidad activos, medida cuantitativamente sobre 30 prompts en [`notebooks/10_evaluacion_routing.ipynb`](notebooks/10_evaluacion_routing.ipynb). Ver [Evaluación cuantitativa del enrutamiento](#evaluación-cuantitativa-del-enrutamiento).
 - **Herramientas activas:** Escaneo de red con Nmap (destino, puertos y flags validados contra una lista blanca), consulta de agentes/eventos/alertas desde Wazuh API/Indexer y generación automatizada de reportes en Markdown y PDF.
 - **RAG MITRE ATT&CK:** Recuperación semántica de técnicas y tácticas desde el bundle STIX sobre un índice vectorial FAISS, con embeddings de Gemini (por defecto) o Cloudflare Workers AI.
 - **Evaluación ampliada:** el dataset de retrieval pasó de 31 a 88 alertas (17 → 36 técnicas); Gemini mantuvo su Hit@5 en ~67 % y el margen de error cayó de ±16.45 a ±9.82 pp. Ver [Resultados](#-resultados).
@@ -243,6 +245,19 @@ La anotación se hace en una **annotation queue de LangSmith** (feedback `fideli
 **Doble evaluación y acuerdo.** Los puntajes principales provienen de un único anotador (el autor), así que se contrastaron con un **juez LLM independiente** (`groq:openai/gpt-oss-120b`, proveedor distinto del generador `google_genai:gemini-3.1-flash-lite`) usando la misma rúbrica; el procedimiento está en la sección 12 de [`notebooks/07_evaluacion_llm.ipynb`](notebooks/07_evaluacion_llm.ipynb). Los resultados están en [`reports/evaluacion_llm_juez_groq.csv`](reports/evaluacion_llm_juez_groq.csv) y [`reports/evaluacion_llm_acuerdo.csv`](reports/evaluacion_llm_acuerdo.csv): en fidelidad, acuerdo exacto 61.3 %, con tolerancia ±1 del 96.8 % y kappa lineal 0.595 (acuerdo moderado); en relevancia, acuerdo exacto 83.9 %, pero el juez asignó 5 a las 31 respuestas, por lo que el kappa es 0 y esa cifra no aporta evidencia de acuerdo. Un juez LLM no reemplaza a un segundo anotador humano y tiene sus propios sesgos, así que estas mediciones son **preliminares** y requieren supervisión analítica. La automatización con [**Ragas**](https://docs.ragas.io/) y un segundo anotador humano quedan como trabajo futuro en el [roadmap](#-roadmap).
 
 **Alcance de la muestra.** El juez se aplicó sobre las mismas 31 alertas de la Fase 1 porque es el único conjunto con respuestas generadas y su contexto recuperado (`outputs.respuesta` y `outputs.contexto_texto` en el export de LangSmith). El dataset ampliado de 88 solo registra métricas de *retrieval* (Hit@5/MRR y técnicas recuperadas), sin salidas del LLM que evaluar; extender la doble evaluación a esas 88 queda registrado en el [roadmap](#-roadmap).
+
+### Evaluación cuantitativa del enrutamiento
+
+La corrección señalaba que del agente completo solo se medían el *retrieval* y la generación sobre contexto fijo, y que el `router` quedaba fuera. El notebook [`notebooks/10_evaluacion_routing.ipynb`](notebooks/10_evaluacion_routing.ipynb) cierra ese hueco: evalúa **solo la decisión del router**, sin ejecutar tools, RAG ni generación final. Se usan las mismas 30 preguntas para ambos modelos, con `temperature=0` y semilla 42, una sola corrida y `max_concurrency=2`, registradas en LangSmith mediante `evaluate()` sobre el dataset `Evaluacion_Routing_Capazeta`.
+
+| Router del grafo | Acierto | IC 95 % (Wilson) | F1 macro | Formato válido | Latencia mediana |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Gemini** (activo, `MODEL_1`) | **29/30 = 96,7 %** | [83,3 %, 99,4 %] | 0,967 | 30/30 (100 %) | 2,87 s |
+| Groq (alternativo, `MODEL_2`) | 28/30 = 93,3 % | [78,7 %, 98,2 %] | 0,947 | 29/30 (96,7 %) | 0,54 s |
+
+**Lectura.** Ambos routers aciertan el 100 % de `infraestructura_redes` y `soc_logs`; el único error de decisión de cada uno es la consulta sobre «generar un informe con reglas de detección para Wazuh», que clasifican como `soc_logs` en vez de `threat_intel`. Un segundo fallo de Groq fue un **429 por límite de tasa**, no una decisión de enrutamiento: con `b=1` y `c=0`, la prueba de McNemar exacta da **`p = 1,0`**, así que no hay evidencia para declarar un ganador. Descartando esa fila por error de infraestructura, ambos quedan en 28/29 (96,6 %) sobre las preguntas que decidieron. Groq sí es unas 5 veces más rápido en la mediana, mientras Gemini tuvo una cola de latencia pronunciada (un caso de 160,97 s).
+
+El ground truth está en [`tests/dataset_evaluacion_routing.csv`](tests/dataset_evaluacion_routing.csv); los resultados completos, en [`reports/evaluacion_routing_resumen.csv`](reports/evaluacion_routing_resumen.csv), [`reports/evaluacion_routing_matriz_gemini.csv`](reports/evaluacion_routing_matriz_gemini.csv), [`reports/evaluacion_routing_matriz_groq.csv`](reports/evaluacion_routing_matriz_groq.csv), [`reports/evaluacion_routing_comparacion.csv`](reports/evaluacion_routing_comparacion.csv) y los exports crudos [`reports/evaluacion_routing_gemini_raw.csv`](reports/evaluacion_routing_gemini_raw.csv) y [`reports/evaluacion_routing_groq_raw.csv`](reports/evaluacion_routing_groq_raw.csv). Los intervalos son de Wilson porque con n = 30 la aproximación normal es poco fiable, y la comparación es pareada por pregunta.
 
 
 ---
@@ -562,8 +577,10 @@ El target se valida con `_validate_target` y los flags con la misma allowlist qu
 - [x] **Exportación de reportes a PDF:** implementada con `save_pdf=True` en `run_nmap_scan`, `wazuh_search_alerts`, `wazuh_mitre_coverage` y `search_mitre_attack`. El Markdown de `report.py` se renderiza a PDF con ReportLab en `src/capazeta/tools/pdf_report.py`.
 - [x] **Tests automáticos:** suite de `pytest` en [`tests/test_nmap.py`](tests/test_nmap.py) y [`tests/test_pdf.py`](tests/test_pdf.py) sobre la allowlist de Nmap (scripts, inyecciones, flags peligrosos) y la generación de PDFs. Ver [Tests](#-tests).
 - [x] **Juez LLM independiente para la evaluación de generación:** las 31 respuestas se puntuaron de nuevo con la misma rúbrica usando Groq `openai/gpt-oss-120b` (proveedor distinto del generador) y se reportaron el acuerdo y el kappa frente al anotador humano. Ver [Evaluación de generación LLM](#evaluación-de-generación-llm-fidelidad-y-relevancia).
+- [x] **Evaluación cuantitativa del enrutamiento:** 30 prompts balanceados (10 por dominio activo) evalúan solo la decisión del router con Gemini y Groq: 96,7 % vs. 93,3 % de acierto, IC de Wilson, matriz de confusión y McNemar exacto (p = 1,0, sin diferencia significativa). Ver [Evaluación cuantitativa del enrutamiento](#evaluación-cuantitativa-del-enrutamiento).
 
 ### Mejoras propuestas para futuros proyectos
+- [ ] **Robustecer y ampliar la evaluación del router:** repetir las 30 consultas con varias corridas y reintento ante errores 429, sumar casos límite que desambiguen «reglas de detección» de «consulta de alertas» y extender el dataset cuando se reactiven otras verticales. La corrida actual no permite distinguir significativamente a Gemini de Groq (`p = 1,0`).
 - [ ] **Repetir la doble evaluación de generación LLM sobre el dataset ampliado:** la fidelidad y relevancia de [`notebooks/07_evaluacion_llm.ipynb`](notebooks/07_evaluacion_llm.ipynb) —anotador humano y juez independiente— se midieron solo sobre las 31 alertas iniciales; falta correr la misma rúbrica sobre las 88 para completar la evaluación de extremo a extremo en la Fase 2.
 - [ ] **Ground truth multi-etiqueta:** registrar todas las técnicas MITRE válidas por alerta y adaptar `mitre_retrieval_evaluator` para aceptar cualquiera de ellas; hoy las alternativas están en `notes` pero no se acreditan.
 - [ ] **Automatización adicional de la evaluación de generación:** incorporar un **segundo anotador humano** para medir acuerdo inter-anotador y automatizar las métricas con [Ragas](https://docs.ragas.io/). El juez LLM independiente ya está implementado (ver Completado), pero no reemplaza a la doble anotación humana.
